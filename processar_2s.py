@@ -329,6 +329,25 @@ def calcular_metricas(df):
     else:
         parc_mes_g = pd.DataFrame()
 
+    # P3 POR PRODUTO
+    prod_list_p3 = sorted([p for p in des['Produto'].dropna().unique().tolist() if str(p).strip() and str(p).lower() != 'nan'])
+    by_sup_prod = {}; by_reg_prod = {}; by_com_prod = {}; by_parc_prod = {}
+    sup_mes_prod = {}; reg_mes_prod = {}
+    for _prod in prod_list_p3:
+        d_p = des[des['Produto'] == _prod]
+        by_sup_prod[_prod] = get_level(d_p, 'Superintendente', 10).to_dict('records')
+        by_reg_prod[_prod] = get_level(d_p, 'Regional', 20).to_dict('records')
+        by_com_prod[_prod] = get_level(d_p, 'Comercial', 40).to_dict('records')
+        bp_p = get_level(d_p, 'Parceiro', 30)
+        if 'Parceiro' in d_p.columns and len(bp_p) > 0:
+            phm_p = d_p[d_p['Parceiro'].apply(ok_hier)].drop_duplicates('Parceiro')[
+                ['Parceiro'] + [c for c in ['Superintendente','Regional','Comercial'] if c in d_p.columns]]
+            bp_p = bp_p.merge(phm_p, on='Parceiro', how='left')
+        by_parc_prod[_prod] = bp_p.to_dict('records')
+        h_p = d_p[d_p['Superintendente'].apply(ok_hier)].copy() if 'Superintendente' in d_p.columns else d_p
+        sup_mes_prod[_prod] = h_p.groupby(['Superintendente','Mes']).agg(C=('Valor Bruto','count'),B=('Valor Bruto','sum'),L=('Valor Líquido','sum')).reset_index().round(2).to_dict('records') if 'Superintendente' in h_p.columns and len(h_p) else []
+        reg_mes_prod[_prod] = d_p[d_p['Regional'].apply(ok_hier)].groupby(['Regional','Mes']).agg(C=('Valor Bruto','count'),B=('Valor Bruto','sum'),L=('Valor Líquido','sum')).reset_index().round(2).to_dict('records') if 'Regional' in d_p.columns and len(d_p) else []
+
     # CONVERSAO
     conv_prod = df.groupby('Produto').agg(Total=('CCB','count')).reset_index()
     conv_des  = des.groupby('Produto').agg(Desemb=('CCB','count')).reset_index()
@@ -486,6 +505,13 @@ def calcular_metricas(df):
         'sup_mes': sup_mes_g.to_dict('records'),
         'reg_mes': reg_mes_g.to_dict('records') if len(reg_mes_g) else [],
         'parc_mes': parc_mes_g.to_dict('records') if len(parc_mes_g) else [],
+        'prod_list_p3': prod_list_p3,
+        'by_sup_prod': by_sup_prod,
+        'by_reg_prod': by_reg_prod,
+        'by_com_prod': by_com_prod,
+        'by_parc_prod': by_parc_prod,
+        'sup_mes_prod': sup_mes_prod,
+        'reg_mes_prod': reg_mes_prod,
         'conv_prod': conv_prod.to_dict('records'),
         'conv_fundo': conv_fundo.to_dict('records') if len(conv_fundo) else [],
         'conv_mes': conv_mes.to_dict('records'),
@@ -597,6 +623,20 @@ def gerar_js_dados(m):
                     'Mes': mes_label(r.get('Mes','')),
                     'C': r.get('C',0), 'B': r.get('B',0), 'L': r.get('L',0)} for r in m.get('parc_mes', [])]
 
+    def fmt_by_sup_prod(rows): return [{'Superintendente':r.get('Superintendente',''),'C':r.get('C',0),'B':r.get('B',0),'L':r.get('L',0)} for r in rows]
+    def fmt_by_reg_prod(rows): return [{'Regional':r.get('Regional',''),'C':r.get('C',0),'B':r.get('B',0),'L':r.get('L',0)} for r in rows]
+    def fmt_by_com_prod(rows): return [{'Comercial':r.get('Comercial',''),'C':r.get('C',0),'B':r.get('B',0),'L':r.get('L',0)} for r in rows]
+    def fmt_by_parc_prod(rows): return [{'Nome parceiro':r.get('Parceiro',r.get('Nome parceiro','')),'Superintendente':r.get('Superintendente',''),'Regional':r.get('Regional',''),'Comercial':r.get('Comercial',''),'C':r.get('C',0),'B':r.get('B',0),'L':r.get('L',0)} for r in rows]
+    def fmt_sup_mes_prod(rows): return [{'Superintendente':r.get('Superintendente',''),'Mes':mes_label(r.get('Mes','')),'C':r.get('C',0),'B':r.get('B',0),'L':r.get('L',0)} for r in rows]
+    def fmt_reg_mes_prod(rows): return [{'Regional':r.get('Regional',''),'Mes':mes_label(r.get('Mes','')),'C':r.get('C',0),'B':r.get('B',0),'L':r.get('L',0)} for r in rows]
+
+    by_sup_prod_js  = {p: fmt_by_sup_prod(v)  for p,v in m.get('by_sup_prod',{}).items()}
+    by_reg_prod_js  = {p: fmt_by_reg_prod(v)  for p,v in m.get('by_reg_prod',{}).items()}
+    by_com_prod_js  = {p: fmt_by_com_prod(v)  for p,v in m.get('by_com_prod',{}).items()}
+    by_parc_prod_js = {p: fmt_by_parc_prod(v) for p,v in m.get('by_parc_prod',{}).items()}
+    sup_mes_prod_js = {p: fmt_sup_mes_prod(v) for p,v in m.get('sup_mes_prod',{}).items()}
+    reg_mes_prod_js = {p: fmt_reg_mes_prod(v) for p,v in m.get('reg_mes_prod',{}).items()}
+
     bloco = f"""const D = {{
   meses:    {jss(m['meses_lbl'])},
   contratos:{jss(m['contratos'])},
@@ -655,6 +695,7 @@ const P3D = {{
   reg_list: {jss(m['reg_list'])},
   mes_list: {jss(m['meses_lbl'])},
   mes_lbl:  {jss({l:l for l in m['meses_lbl']})},
+  prod_list: {jss(m.get('prod_list_p3',[]))},
   by_sup:   {jss(by_sup_js)},
   by_reg:   {jss(by_reg_js)},
   by_com:   {jss(by_com_js)},
@@ -662,6 +703,12 @@ const P3D = {{
   sup_mes:  {jss(sup_mes_js)},
   reg_mes:  {jss(reg_mes_js)},
   parc_mes: {jss(parc_mes_js)},
+  by_sup_prod:  {jss(by_sup_prod_js)},
+  by_reg_prod:  {jss(by_reg_prod_js)},
+  by_com_prod:  {jss(by_com_prod_js)},
+  by_parc_prod: {jss(by_parc_prod_js)},
+  sup_mes_prod: {jss(sup_mes_prod_js)},
+  reg_mes_prod: {jss(reg_mes_prod_js)},
 }};
 
 """

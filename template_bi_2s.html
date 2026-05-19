@@ -406,6 +406,13 @@
       <div style="font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap">🔽 Filtros:</div>
 
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--muted);font-weight:600">PRODUTO</span>
+        <div class="f-btn-group" id="p3_f_prod">
+          <button class="f-btn active" data-p3group="prod" data-p3val="todos">Todos</button>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
         <span style="font-size:10px;color:var(--muted);font-weight:600">MÊS</span>
         <div class="f-btn-group" id="p3_f_mes">
           <button class="f-btn active" data-p3group="mes" data-p3val="todos">Todos</button>
@@ -1115,7 +1122,7 @@ const P3D = {
   reg_mes:  [{"Regional": "0114 - ARTHUR ROZA NETO", "Mes": "Ago/25", "C": 344, "B": 169615.84, "L": 124746.14}, {"Regional": "0114 - ARTHUR ROZA NETO", "Mes": "Set/25", "C": 293, "B": 198100.59, "L": 147831.72}, {"Regional": "0604 - DINHO SILVA", "Mes": "Ago/25", "C": 1, "B": 260.69, "L": 166.61}, {"Regional": "0769 - MELHOR CRÉDITO (REGIONAL)", "Mes": "Ago/25", "C": 2, "B": 535.86, "L": 376.62}, {"Regional": "0769 - MELHOR CRÉDITO (REGIONAL)", "Mes": "Set/25", "C": 11, "B": 5907.84, "L": 4379.81}, {"Regional": "1292 - RODRIGO VALCI SILVEIRA", "Mes": "Ago/25", "C": 53, "B": 23170.02, "L": 17490.23}, {"Regional": "1292 - RODRIGO VALCI SILVEIRA", "Mes": "Set/25", "C": 63, "B": 36213.3, "L": 27072.0}, {"Regional": "1595 - STELA PESSOA DOMINGOS", "Mes": "Ago/25", "C": 3, "B": 4598.92, "L": 3523.44}, {"Regional": "1595 - STELA PESSOA DOMINGOS", "Mes": "Set/25", "C": 2, "B": 7946.23, "L": 6097.85}, {"Regional": "1784 - GEANDERSON LOCKS NAZARIO DE OLIVEIRA", "Mes": "Ago/25", "C": 63, "B": 59183.05, "L": 44405.27}, {"Regional": "1784 - GEANDERSON LOCKS NAZARIO DE OLIVEIRA", "Mes": "Set/25", "C": 58, "B": 62891.1, "L": 47523.21}, {"Regional": "17890 - RENAN LELES DOS SANTOS (CHECK)", "Mes": "Ago/25", "C": 127, "B": 56799.78, "L": 41502.09}, {"Regional": "17890 - RENAN LELES DOS SANTOS (CHECK)", "Mes": "Set/25", "C": 75, "B": 50679.48, "L": 38062.27}, {"Regional": "2097 - ODAILTON SOUSA MALVEIRA", "Mes": "Ago/25", "C": 50, "B": 41603.67, "L": 31140.32}, {"Regional": "2097 - ODAILTON SOUSA MALVEIRA", "Mes": "Set/25", "C": 25, "B": 18375.27, "L": 13829.56}, {"Regional": "2523 - JHONATHAN ROSSI DA CRUZ", "Mes": "Ago/25", "C": 59, "B": 37591.36, "L": 27996.12}, {"Regional": "2523 - JHONATHAN ROSSI DA CRUZ", "Mes": "Set/25", "C": 49, "B": 25586.26, "L": 18938.52}, {"Regional": "25576 - JOSE DIONISIO ALBUQUERQUE JUNIOR", "Mes": "Ago/25", "C": 8, "B": 4229.93, "L": 3071.16}, {"Regional": "25576 - JOSE DIONISIO ALBUQUERQUE JUNIOR", "Mes": "Set/25", "C": 7, "B": 1752.43, "L": 1196.46}, {"Regional": "26248 - FELIPE CUNHA DE JESUS", "Mes": "Ago/25", "C": 7, "B": 4250.06, "L": 3162.08}, {"Regional": "26248 - FELIPE CUNHA DE JESUS", "Mes": "Set/25", "C": 11, "B": 15747.21, "L": 11883.31}, {"Regional": "33014 - ALLEF KAYQUE MARQUES BONS OLHOS", "Mes": "Ago/25", "C": 143, "B": 88862.99, "L": 65920.2}, {"Regional": "33014 - ALLEF KAYQUE MARQUES BONS OLHOS", "Mes": "Set/25", "C": 148, "B": 96353.42, "L": 71785.89}, {"Regional": "3474 - BRUNO SANTANA FERREIRA", "Mes": "Set/25", "C": 2, "B": 2277.68, "L": 1739.19}, {"Regional": "6051 - NEXTT PROMOTORA (REGIONAL)", "Mes": "Ago/25", "C": 5, "B": 3529.36, "L": 2612.99}, {"Regional": "6051 - NEXTT PROMOTORA (REGIONAL)", "Mes": "Set/25", "C": 9, "B": 9634.87, "L": 7285.74}, {"Regional": "8211 - ALLAN MONTEIRO DE LIMA", "Mes": "Ago/25", "C": 40, "B": 14473.24, "L": 10293.02}, {"Regional": "8211 - ALLAN MONTEIRO DE LIMA", "Mes": "Set/25", "C": 27, "B": 15895.21, "L": 11858.99}],
 };
 
-const P3F = {sup: 'todos', reg: 'todos', mes: 'todos'};
+const P3F = {sup: 'todos', reg: 'todos', mes: 'todos', prod: 'todos'};
 let charts3 = {};
 
 function destroyCharts3() {
@@ -1123,6 +1130,11 @@ function destroyCharts3() {
   charts3 = {};
 }
 
+function p3GetData(base, baseProd) {
+  // Se produto selecionado e existir dataset por produto, usa ele; senão usa base
+  if (P3F.prod !== 'todos' && baseProd && baseProd[P3F.prod]) return baseProd[P3F.prod];
+  return base;
+}
 function p3Filter(data) {
   let r = data;
   if (P3F.sup !== 'todos') r = r.filter(x => (x.Superintendente||'') === P3F.sup);
@@ -1146,10 +1158,18 @@ function p3Aggregate(data, groupCol) {
 
 function renderP3() {
   destroyCharts3();
-  const lbl = [P3F.mes !== 'todos' ? P3D.mes_lbl[P3F.mes]||P3F.mes : '', P3F.sup !== 'todos' ? P3F.sup.split(' - ')[1]||P3F.sup : '', P3F.reg !== 'todos' ? P3F.reg.split(' - ')[1]||P3F.reg : ''].filter(Boolean).join(' · ');
+  const lbl = [P3F.prod !== 'todos' ? P3F.prod : '', P3F.mes !== 'todos' ? P3D.mes_lbl[P3F.mes]||P3F.mes : '', P3F.sup !== 'todos' ? P3F.sup.split(' - ')[1]||P3F.sup : '', P3F.reg !== 'todos' ? P3F.reg.split(' - ')[1]||P3F.reg : ''].filter(Boolean).join(' · ');
+
+  // Seleciona datasets (produto filtrado se disponível)
+  const _sup_mes  = p3GetData(P3D.sup_mes,  P3D.sup_mes_prod);
+  const _reg_mes  = p3GetData(P3D.reg_mes,  P3D.reg_mes_prod);
+  const _by_sup   = p3GetData(P3D.by_sup,   P3D.by_sup_prod);
+  const _by_reg   = p3GetData(P3D.by_reg,   P3D.by_reg_prod);
+  const _by_com   = p3GetData(P3D.by_com,   P3D.by_com_prod);
+  const _by_parc  = p3GetData(P3D.by_parc,  P3D.by_parc_prod);
 
   // Filtra sup_mes para calcular totais
-  const filtSM = p3Filter(P3D.sup_mes);
+  const filtSM = p3Filter(_sup_mes);
   const aggSup = p3Aggregate(filtSM, 'Superintendente').slice(0,8);
   const totB = aggSup.reduce((a,b)=>a+b.B,0);
   const totL = aggSup.reduce((a,b)=>a+b.L,0);
@@ -1196,7 +1216,7 @@ function renderP3() {
   });
 
   // Filtra reg_mes e agrega
-  const filtRM = p3Filter(P3D.reg_mes);
+  const filtRM = p3Filter(_reg_mes);
   const aggReg = p3Aggregate(filtRM, 'Regional').slice(0,10);
   charts3.reg = new Chart(document.getElementById('c3_reg'), {
     type: 'bar',
@@ -1207,14 +1227,8 @@ function renderP3() {
     options: { indexAxis:'y', responsive:true, plugins:{legend:{display:false}}, scales:{x:{grid:{color:'rgba(255,255,255,.04)'},title:{display:true,text:'R$ mil'}},y:{ticks:{font:{size:9}}}}}
   });
 
-  // Comercial — usa by_com filtrado
-  let filtCom = P3D.by_com;
-  if (P3F.sup !== 'todos') filtCom = filtCom.filter(x => {
-    // Aproximação: filtra top comerciais pelo sup selecionado via sup_mes
-    const supData = p3Filter(P3D.sup_mes);
-    return supData.length > 0; // mostra todos quando sup filtrado (dados cruzados não disponíveis)
-  });
-  const aggCom = filtCom.slice(0,10);
+  // Comercial — usa _by_com filtrado por produto se selecionado
+  const aggCom = _by_com.slice(0,10);
   charts3.com = new Chart(document.getElementById('c3_com'), {
     type: 'bar',
     data: {
@@ -1224,21 +1238,18 @@ function renderP3() {
     options: { indexAxis:'y', responsive:true, plugins:{legend:{display:false}}, scales:{x:{grid:{color:'rgba(255,255,255,.04)'},title:{display:true,text:'R$ mil'}},y:{ticks:{font:{size:9}}}}}
   });
 
-  // Tabela parceiros - respeita filtros sup/reg/mes
+  // Tabela parceiros - respeita filtros sup/reg/mes/prod
   let parcData;
   if (P3F.mes !== 'todos' && P3D.parc_mes && P3D.parc_mes.length) {
-    // Filtro por mes: agrega parc_mes apenas do mes selecionado
     const mesLbl = P3D.mes_lbl[P3F.mes] || P3F.mes;
     let filt = P3D.parc_mes.filter(x => x.Mes === mesLbl);
-    // Cruza com by_parc para herdar Superintendente/Regional para filtros adicionais
     const hierMap = {};
-    (P3D.by_parc||[]).forEach(p => { hierMap[p['Nome parceiro']] = p; });
+    (_by_parc||[]).forEach(p => { hierMap[p['Nome parceiro']] = p; });
     if (P3F.sup !== 'todos') filt = filt.filter(x => (hierMap[x['Nome parceiro']]||{}).Superintendente === P3F.sup);
     if (P3F.reg !== 'todos') filt = filt.filter(x => (hierMap[x['Nome parceiro']]||{}).Regional === P3F.reg);
     parcData = filt.sort((a,b) => b.B - a.B).slice(0, 20);
   } else {
-    // Sem filtro de mes: usa by_parc (totais), filtra sup/reg
-    parcData = (P3D.by_parc || []).slice();
+    parcData = (_by_parc || []).slice();
     if (P3F.sup !== 'todos') parcData = parcData.filter(x => x.Superintendente === P3F.sup);
     if (P3F.reg !== 'todos') parcData = parcData.filter(x => x.Regional === P3F.reg);
   }
@@ -1286,6 +1297,7 @@ function renderP3() {
   // Chips
   const chips = document.getElementById('p3_chips');
   const active = [];
+  if (P3F.prod !== 'todos') active.push({label:'Produto: '+P3F.prod, key:'prod'});
   if (P3F.mes !== 'todos') active.push({label:'Mês: '+(P3D.mes_lbl[P3F.mes]||P3F.mes), key:'mes'});
   if (P3F.sup !== 'todos') active.push({label:'Sup: '+P3F.sup.split(' - ').slice(1).join(' '), key:'sup'});
   if (P3F.reg !== 'todos') active.push({label:'Reg: '+P3F.reg.split(' - ').slice(1).join(' '), key:'reg'});
@@ -1306,6 +1318,17 @@ function p3ClearFilter(key) {
 }
 
 function buildP3() {
+  // Popula botões de produto
+  const prodGrp = document.getElementById('p3_f_prod');
+  (P3D.prod_list || []).forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'f-btn';
+    btn.dataset.p3group = 'prod';
+    btn.dataset.p3val = p;
+    btn.textContent = p;
+    prodGrp.appendChild(btn);
+  });
+
   // Popula botões de mês
   const mesGrp = document.getElementById('p3_f_mes');
   P3D.mes_list.forEach(m => {
@@ -1354,7 +1377,7 @@ function buildP3() {
   });
 
   document.getElementById('p3_reset').addEventListener('click', () => {
-    P3F.sup = 'todos'; P3F.reg = 'todos'; P3F.mes = 'todos';
+    P3F.sup = 'todos'; P3F.reg = 'todos'; P3F.mes = 'todos'; P3F.prod = 'todos';
     document.querySelectorAll('[data-p3group]').forEach(b => b.classList.toggle('active', b.dataset.p3val === 'todos'));
     renderP3();
   });
