@@ -1245,6 +1245,8 @@ function renderP3() {
     let filt = P3D.parc_mes.filter(x => x.Mes === mesLbl);
     const hierMap = {};
     (_by_parc||[]).forEach(p => { hierMap[p['Nome parceiro']] = p; });
+    // Se produto filtrado, mantém só parceiros que existem no dataset de produto
+    if (P3F.prod !== 'todos') filt = filt.filter(x => !!hierMap[x['Nome parceiro']]);
     if (P3F.sup !== 'todos') filt = filt.filter(x => (hierMap[x['Nome parceiro']]||{}).Superintendente === P3F.sup);
     if (P3F.reg !== 'todos') filt = filt.filter(x => (hierMap[x['Nome parceiro']]||{}).Regional === P3F.reg);
     parcData = filt.sort((a,b) => b.B - a.B).slice(0, 20);
