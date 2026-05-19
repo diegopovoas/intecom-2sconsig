@@ -31,6 +31,31 @@ if errorlevel 1 (
 )
 echo.
 
-echo  [Etapa 2/2] Processando dados e gerando painel...
+echo  [Etapa 2/3] Processando dados e gerando painel...
 echo.
 python processar_2s.py
+if errorlevel 1 (
+    echo.
+    echo  ERRO: falha ao gerar painel. Verifique os dados.
+    pause
+    exit /b
+)
+echo.
+
+echo  [Etapa 3/3] Publicando painel no GitHub...
+echo.
+cd /d "%~dp0"
+git add painel_bi_2s.html
+git commit -m "Painel atualizado em %DATE% %TIME%" >nul 2>&1
+git push origin master
+if errorlevel 1 (
+    echo  AVISO: nao foi possivel publicar no GitHub.
+    echo  Verifique sua conexao ou autenticacao do Git.
+) else (
+    echo  Painel publicado com sucesso!
+    echo.
+    echo  Acesse em:
+    echo  https://diegopovoas.github.io/intecom-2sconsig/painel_bi_2s.html
+)
+echo.
+pause
