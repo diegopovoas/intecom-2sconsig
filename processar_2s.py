@@ -819,6 +819,21 @@ def main():
     html = open(template_path, encoding='utf-8').read()
     html = html.replace('__PAINEL_USERS_OBJ__', jss(load_panel_users()))
 
+    # ── Injetar usuarios com senha hasheada ──────────────────────
+    import hashlib as _hashlib, json as _json
+    _usuarios_path = os.path.join(PASTA, 'usuarios.json')
+    if os.path.exists(_usuarios_path):
+        with open(_usuarios_path, encoding='utf-8') as _f:
+            _usuarios_raw = _json.load(_f)
+        _usuarios_hash = {u.upper(): _hashlib.sha256(p.encode()).hexdigest()
+                          for u, p in _usuarios_raw.items()}
+        log(f'Usuarios carregados: {", ".join(_usuarios_hash.keys())}')
+    else:
+        # fallback: sem arquivo, bloqueia acesso
+        _usuarios_hash = {}
+        log('AVISO: usuarios.json nao encontrado — nenhum usuario habilitado')
+    html = html.replace('%%USUARIOS_HASH%%', _json.dumps(_usuarios_hash))
+
     M_START = '// %%DADOS_INICIO%%\n'
     M_END   = '// %%DADOS_FIM%%\n'
     ms = html.find(M_START)

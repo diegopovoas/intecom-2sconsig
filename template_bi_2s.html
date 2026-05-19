@@ -632,9 +632,7 @@ const D = {
 // %%DADOS_FIM%%
 
 // ── AUTENTICAÇÃO ────────────────────────────────────────────
-const _USERS = {
-  'DIEGO': '60d33e73946ceced6cc58957f319073be7b3f2983f335fff95f3722810d00993'
-};
+const _USERS = %%USUARIOS_HASH%%;
 
 async function _sha256(txt) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt));

@@ -2,6 +2,7 @@
 credenciais_2s.txt
 credenciais_db.txt
 painel_usuarios.local.json
+usuarios.json
 *.bak.xlsx
 
 # Dados brutos (nao versionar)
