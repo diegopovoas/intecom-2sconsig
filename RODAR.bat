@@ -1,4 +1,5 @@
 @echo off
+cd /d "%~dp0"
 title 2S Consig - Atualizando e Gerando Painel BI...
 color 0A
 echo.
@@ -46,7 +47,12 @@ echo  [Etapa 3/3] Publicando painel no GitHub...
 echo.
 cd /d "%~dp0"
 git add painel_bi_2s.html
-git commit -m "Painel atualizado em %DATE% %TIME%" >nul 2>&1
+git diff --cached --quiet
+if errorlevel 1 (
+    git commit -m "Painel atualizado"
+) else (
+    echo  Painel sem alteracoes, pulando commit.
+)
 git push origin master
 if errorlevel 1 (
     echo  AVISO: nao foi possivel publicar no GitHub.
