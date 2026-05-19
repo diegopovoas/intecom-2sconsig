@@ -1,0 +1,32 @@
+# Segredos e dados locais
+credenciais_2s.txt
+credenciais_db.txt
+painel_usuarios.local.json
+*.bak.xlsx
+
+# Dados brutos (nao versionar)
+dados_2s.xlsx
+producao.parquet
+
+# Google Drive temp
+.tmp.driveupload/
+.tmp.drivedownload/
+
+# Arquivos temporarios
+_check.py
+base_tratada_2s*.xlsx
+painel_bi_2s_FINAL.html
+
+# Python
+__pycache__/
+*.py[cod]
+.Python
+venv/
+.venv/
+
+# Saídas (opcional: descomente se não quiser versionar relatórios)
+# csv_processados/
+credenciais_db.txt
+
+# Local Netlify folder
+.netlify
