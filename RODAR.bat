@@ -17,6 +17,7 @@ if errorlevel 1 (
     exit /b
 )
 
+set NO_BROWSER=1
 echo  Verificando dependencias...
 pip install pandas openpyxl pymysql pyarrow requests --quiet --disable-pip-version-check 2>nul
 echo.
