@@ -433,8 +433,10 @@
     <div id="tab_resumo" style="display:flex;gap:18px;padding:8px 2px 12px;border-bottom:1px solid var(--border);margin-bottom:8px;flex-wrap:wrap"></div>
     <table>
       <thead>
-        <tr id="tab_thead">
-          <th>#</th><th>Tabela</th><th>Contr.</th>
+        <tr>
+          <th>#</th><th>Tabela</th>
+          <th>Digitados</th>
+          <th style="color:var(--green)">Desembolsados</th>
           <th style="color:var(--accent2)">Prod. Bruta</th>
           <th style="color:var(--purple)">Prod. L&iacute;quida</th>
           <th style="color:var(--yellow)">Ticket M&eacute;dio</th>
@@ -645,19 +647,19 @@ const D = {
   topParc: [{"n": "9516 - N1 PROMOTORA", "c": 3694, "b": 5310914.77, "l": 4490787.21}, {"n": "2180 - FELIPE NUNES LOPES", "c": 2785, "b": 1916200.76, "l": 1333173.64}, {"n": "19438 - ANDERSON  VALIERI", "c": 969, "b": 1467951.28, "l": 1256849.91}, {"n": "0654 - LUCAS PAVLAK", "c": 517, "b": 935190.87, "l": 812962.45}, {"n": "92569 - MULT CONECTAR FIBRA LTDA", "c": 866, "b": 927622.14, "l": 795460.99}, {"n": "9295 - FABIELE MENDONÇA PEREIRA MARQUES", "c": 588, "b": 915565.39, "l": 794222.47}, {"n": "30849 - PRONTO", "c": 1172, "b": 900399.54, "l": 794018.8}, {"n": "8818 - SOARES ATIVIDADES DE COBRANÇAS LTDA ME", "c": 828, "b": 872596.0, "l": 732720.3}, {"n": "87950 - DAIANA APARECIDA MOURA", "c": 599, "b": 841160.48, "l": 721985.64}, {"n": "8427 - BALTAZAR DE OLIVEIRA SOLUÇÕES DE NEGÓCIOS", "c": 1425, "b": 776219.79, "l": 584058.36}, {"n": "27493 - DAYVIDSON MACHADO RODRIGUES MENDES 09283752694", "c": 652, "b": 768034.74, "l": 657630.38}, {"n": "9976 - MICHELLA KAREM VARGAS", "c": 1330, "b": 594863.07, "l": 397022.67}, {"n": "38173 - RENNOVA PROMOTORA LTDA", "c": 438, "b": 561892.82, "l": 470557.25}, {"n": "0601 - CREDITOS CIDADE AZUL CORRESPONDENTE FINANCEIRO LTDA", "c": 377, "b": 557618.1, "l": 471862.51}, {"n": "7752 - FOUR CRED SOLUCOES FINANCEIRAS LTDA", "c": 436, "b": 554179.46, "l": 473996.0}],
   fundos: [{"f": "LA VIE PFO", "c": 11447, "b": 17362540.09, "l": 14911627.6}, {"f": "Anga", "c": 25031, "b": 14589080.78, "l": 10972240.56}, {"f": "Nexa NXFS", "c": 19364, "b": 7920945.39, "l": 4856384.58}, {"f": "HEAD", "c": 1089, "b": 947398.15, "l": 847172.55}, {"f": "UY3 Asset", "c": 291, "b": 757190.58, "l": 619766.74}],
 
-  status: [{"s": "Desembolsado", "v": 57224}, {"s": "Cancelado", "v": 19642}, {"s": "Ag. Assinatura", "v": 3704}, {"s": "Outros", "v": 246}, {"s": "Ag. Desembolso", "v": 158}, {"s": "Em Analise", "v": 48}],
+  status: [{"s": "Desembolsado", "v": 57224}, {"s": "Cancelado", "v": 19642}, {"s": "Ag. Assinatura", "v": 3707}, {"s": "Outros", "v": 246}, {"s": "Ag. Desembolso", "v": 158}, {"s": "Em Analise", "v": 48}],
 
   _meta: {
     data_ref: "25/05/2026",
-    total_reg: 81023,
+    total_reg: 81026,
     total_des: 57223,
     conv_geral: 70.6,
     total_bruto: 41579199.21,
     total_liq: 32209197.61,
     fgts_total:1467, fgts_des:1089, fgts_b:947398.15, fgts_l:847172.55, fgts_conv:74.2, fgts_tkb:870,
-    ec_total:79550,   ec_des:56133,   ec_b:40629756.84,   ec_l:31360019.48,   ec_conv:70.6,   ec_tkb:724,
+    ec_total:79553,   ec_des:56133,   ec_b:40629756.84,   ec_l:31360019.48,   ec_conv:70.6,   ec_tkb:724,
     nome_ec: "CLT",
-    st_des:57224, st_canc:19642, st_ag:4156,
+    st_des:57224, st_canc:19642, st_ag:4159,
     mes_lbl: "Mai/26",
     mes_contr:3990, mes_bruto:2663440.18, mes_liq:2052714.95,
     mes_proj_b:3290131.99, mes_proj_l:2535706.7, mes_proj_c:4929,
@@ -665,8 +667,8 @@ const D = {
     mes_ant_b:2933514.34, mes_ant_c:4770, mes_var_b:12.2,
     mes_prod: {"CLT": {"c": 2900, "b": 1713997.81, "l": 1203536.82}, "FGTS": {"c": 1089, "b": 947398.15, "l": 847172.55}},
     mes_fundo: {"Anga": {"c": 1268, "b": 997983.31, "l": 762842.93}, "HEAD": {"c": 1089, "b": 947398.15, "l": 847172.55}, "Nexa NXFS": {"c": 1632, "b": 716014.5, "l": 440693.89}},
-    mes_tabela: [{"Tabela": "PREMIUM - R$ 50,00 À R$ 11.000,00 - Nexa NXFS", "C": 1632, "B": 716014.5, "L": 440693.89}, {"Tabela": "ELITE - R$ 320,01 À R$ 940,00 - Anga", "C": 604, "B": 516708.87, "L": 396245.49}, {"Tabela": "ELITE - R$ 940,01 À R$ 23.000,00 - Anga", "C": 268, "B": 389167.22, "L": 298912.87}, {"Tabela": "PREMIUM - CLT - PRAZO 24 - HEAD", "C": 422, "B": 364959.03, "L": 327514.96}, {"Tabela": "PREMIUM - CLT - PRAZO 36 - HEAD", "C": 387, "B": 274503.65, "L": 239288.62}, {"Tabela": "PREMIUM - CLT - PRAZO 18 - HEAD", "C": 204, "B": 202336.41, "L": 184971.3}, {"Tabela": "PREMIUM - CLT - PRAZO 30 - HEAD", "C": 53, "B": 70483.11, "L": 62613.4}, {"Tabela": "PODIUM - R$ 75,00 À R$ 265,00 - Anga", "C": 180, "B": 37513.9, "L": 28673.36}, {"Tabela": "PREMIUM - CLT - PRAZO 12 - HEAD", "C": 23, "B": 35115.95, "L": 32784.27}, {"Tabela": "ELITE - R$ 50,00 À R$ 230,00 - Anga", "C": 146, "B": 26505.32, "L": 17525.7}, {"Tabela": "SPRINT - R$ 250,00 À R$ 365,00 - Anga", "C": 35, "B": 14165.18, "L": 11551.66}, {"Tabela": "ELITE - R$ 230,01 À R$ 320,00 - Anga", "C": 35, "B": 13922.82, "L": 9933.85}, {"Tabela": "PREMIUM - CLT - PRAZO 6", "C": 1, "B": 2044.22, "L": 2005.58}],
-    mes_tabela_prod: {"CLT": [{"Tabela": "PREMIUM - R$ 50,00 À R$ 11.000,00 - Nexa NXFS", "C": 1632, "B": 716014.5, "L": 440693.89}, {"Tabela": "ELITE - R$ 320,01 À R$ 940,00 - Anga", "C": 604, "B": 516708.87, "L": 396245.49}, {"Tabela": "ELITE - R$ 940,01 À R$ 23.000,00 - Anga", "C": 268, "B": 389167.22, "L": 298912.87}, {"Tabela": "PODIUM - R$ 75,00 À R$ 265,00 - Anga", "C": 180, "B": 37513.9, "L": 28673.36}, {"Tabela": "ELITE - R$ 50,00 À R$ 230,00 - Anga", "C": 146, "B": 26505.32, "L": 17525.7}, {"Tabela": "SPRINT - R$ 250,00 À R$ 365,00 - Anga", "C": 35, "B": 14165.18, "L": 11551.66}, {"Tabela": "ELITE - R$ 230,01 À R$ 320,00 - Anga", "C": 35, "B": 13922.82, "L": 9933.85}], "FGTS": [{"Tabela": "PREMIUM - CLT - PRAZO 24 - HEAD", "C": 422, "B": 364959.03, "L": 327514.96}, {"Tabela": "PREMIUM - CLT - PRAZO 36 - HEAD", "C": 387, "B": 274503.65, "L": 239288.62}, {"Tabela": "PREMIUM - CLT - PRAZO 18 - HEAD", "C": 204, "B": 202336.41, "L": 184971.3}, {"Tabela": "PREMIUM - CLT - PRAZO 30 - HEAD", "C": 53, "B": 70483.11, "L": 62613.4}, {"Tabela": "PREMIUM - CLT - PRAZO 12 - HEAD", "C": 23, "B": 35115.95, "L": 32784.27}]},
+    mes_tabela: [{"Tabela": "PREMIUM - R$ 50,00 À R$ 11.000,00 - Nexa NXFS", "C": 2720, "Cdes": 1632, "B": 716014.5, "L": 440693.89}, {"Tabela": "ELITE - R$ 320,01 À R$ 940,00 - Anga", "C": 779, "Cdes": 604, "B": 516708.87, "L": 396245.49}, {"Tabela": "ELITE - R$ 940,01 À R$ 23.000,00 - Anga", "C": 333, "Cdes": 268, "B": 389167.22, "L": 298912.87}, {"Tabela": "PREMIUM - CLT - PRAZO 24 - HEAD", "C": 560, "Cdes": 422, "B": 364959.03, "L": 327514.96}, {"Tabela": "PREMIUM - CLT - PRAZO 36 - HEAD", "C": 493, "Cdes": 387, "B": 274503.65, "L": 239288.62}, {"Tabela": "PREMIUM - CLT - PRAZO 18 - HEAD", "C": 297, "Cdes": 204, "B": 202336.41, "L": 184971.3}, {"Tabela": "PREMIUM - CLT - PRAZO 30 - HEAD", "C": 76, "Cdes": 53, "B": 70483.11, "L": 62613.4}, {"Tabela": "PODIUM - R$ 75,00 À R$ 265,00 - Anga", "C": 263, "Cdes": 180, "B": 37513.9, "L": 28673.36}, {"Tabela": "PREMIUM - CLT - PRAZO 12 - HEAD", "C": 37, "Cdes": 23, "B": 35115.95, "L": 32784.27}, {"Tabela": "ELITE - R$ 50,00 À R$ 230,00 - Anga", "C": 185, "Cdes": 146, "B": 26505.32, "L": 17525.7}, {"Tabela": "SPRINT - R$ 250,00 À R$ 365,00 - Anga", "C": 52, "Cdes": 35, "B": 14165.18, "L": 11551.66}, {"Tabela": "ELITE - R$ 230,01 À R$ 320,00 - Anga", "C": 48, "Cdes": 35, "B": 13922.82, "L": 9933.85}, {"Tabela": "PREMIUM - CLT - PRAZO 6 - HEAD", "C": 2, "Cdes": 1, "B": 2044.22, "L": 2005.58}, {"Tabela": "PREMIUM - CLT - PRAZO 9 - HEAD", "C": 1, "Cdes": 0, "B": 0.0, "L": 0.0}],
+    mes_tabela_prod: {"CLT": [{"Tabela": "PREMIUM - R$ 50,00 À R$ 11.000,00 - Nexa NXFS", "C": 2720, "Cdes": 1632, "B": 716014.5, "L": 440693.89}, {"Tabela": "ELITE - R$ 320,01 À R$ 940,00 - Anga", "C": 779, "Cdes": 604, "B": 516708.87, "L": 396245.49}, {"Tabela": "ELITE - R$ 940,01 À R$ 23.000,00 - Anga", "C": 333, "Cdes": 268, "B": 389167.22, "L": 298912.87}, {"Tabela": "PODIUM - R$ 75,00 À R$ 265,00 - Anga", "C": 263, "Cdes": 180, "B": 37513.9, "L": 28673.36}, {"Tabela": "ELITE - R$ 50,00 À R$ 230,00 - Anga", "C": 185, "Cdes": 146, "B": 26505.32, "L": 17525.7}, {"Tabela": "SPRINT - R$ 250,00 À R$ 365,00 - Anga", "C": 52, "Cdes": 35, "B": 14165.18, "L": 11551.66}, {"Tabela": "ELITE - R$ 230,01 À R$ 320,00 - Anga", "C": 48, "Cdes": 35, "B": 13922.82, "L": 9933.85}], "FGTS": [{"Tabela": "PREMIUM - CLT - PRAZO 24 - HEAD", "C": 560, "Cdes": 422, "B": 364959.03, "L": 327514.96}, {"Tabela": "PREMIUM - CLT - PRAZO 36 - HEAD", "C": 493, "Cdes": 387, "B": 274503.65, "L": 239288.62}, {"Tabela": "PREMIUM - CLT - PRAZO 18 - HEAD", "C": 297, "Cdes": 204, "B": 202336.41, "L": 184971.3}, {"Tabela": "PREMIUM - CLT - PRAZO 30 - HEAD", "C": 76, "Cdes": 53, "B": 70483.11, "L": 62613.4}, {"Tabela": "PREMIUM - CLT - PRAZO 12 - HEAD", "C": 37, "Cdes": 23, "B": 35115.95, "L": 32784.27}]},
     hoje_data: "25/05/2026",
     hoje_c:26, hoje_b:7924.9, hoje_l:5038.17,
     hoje_fgts_c:0, hoje_fgts_b:0, hoje_fgts_l:0,
@@ -675,7 +677,7 @@ const D = {
     hoje_parc: [{"n": "30849 - PRONTO", "c": 16, "b": 3683.44, "l": 2357.09}, {"n": "5333 - ROBSON CARLOS DE SOUZA ANDRADE", "c": 1, "b": 1662.87, "l": 1033.97}, {"n": "4675 - NATANAEL WILLIAM RODRIGUES ARRUDA", "c": 1, "b": 906.19, "l": 558.18}, {"n": "Usuario interno / operacional", "c": 3, "b": 631.56, "l": 383.09}, {"n": "63151 - GIULIA GRACIELA OLIVEIRA PLENS", "c": 1, "b": 484.08, "l": 368.65}, {"n": "9516 - N1 PROMOTORA", "c": 1, "b": 202.35, "l": 123.47}, {"n": "93470 - RODOLFO ROMER CARAZZI", "c": 1, "b": 152.91, "l": 92.43}, {"n": "0940 - MAICON BATISTA", "c": 1, "b": 106.64, "l": 63.93}, {"n": "7107 - YARA CHRISTTINA DUARTE DA SILVA", "c": 1, "b": 94.86, "l": 57.36}],
     hoje_fundo: {"Anga": {"c": 3, "b": 1193.28, "l": 902.61}, "Nexa NXFS": {"c": 23, "b": 6731.62, "l": 4135.56}},
     dia_dia: [{"d": 1, "c": 35, "b": 22134.24, "l": 16067.36}, {"d": 2, "c": 33, "b": 20399.07, "l": 14911.94}, {"d": 3, "c": 10, "b": 4417.58, "l": 3070.56}, {"d": 4, "c": 150, "b": 101893.25, "l": 72517.12}, {"d": 5, "c": 247, "b": 128756.95, "l": 89969.01}, {"d": 6, "c": 164, "b": 97747.77, "l": 69793.29}, {"d": 7, "c": 185, "b": 117004.85, "l": 82756.25}, {"d": 8, "c": 238, "b": 188395.94, "l": 150499.07}, {"d": 9, "c": 267, "b": 184495.82, "l": 159343.56}, {"d": 10, "c": 14, "b": 5832.92, "l": 4153.08}, {"d": 11, "c": 339, "b": 229573.15, "l": 184642.2}, {"d": 12, "c": 300, "b": 198434.84, "l": 157974.02}, {"d": 13, "c": 677, "b": 566468.03, "l": 479155.28}, {"d": 14, "c": 235, "b": 165231.79, "l": 124169.42}, {"d": 15, "c": 241, "b": 136445.89, "l": 96035.16}, {"d": 16, "c": 85, "b": 37336.95, "l": 25587.7}, {"d": 17, "c": 41, "b": 18208.01, "l": 12272.78}, {"d": 18, "c": 154, "b": 96937.79, "l": 68383.07}, {"d": 19, "c": 107, "b": 71714.15, "l": 50708.14}, {"d": 20, "c": 117, "b": 81225.95, "l": 57749.46}, {"d": 21, "c": 96, "b": 66080.91, "l": 46968.96}, {"d": 22, "c": 99, "b": 63532.53, "l": 45031.65}, {"d": 23, "c": 69, "b": 33316.84, "l": 22670.91}, {"d": 24, "c": 61, "b": 19930.06, "l": 13246.79}, {"d": 25, "c": 26, "b": 7924.9, "l": 5038.17}],
-    gerado_em: "25/05/2026 11:22",
+    gerado_em: "25/05/2026 11:31",
     sup1_n:"JESSICA COUTINHO DE AZEVEDO", sup1_c:18543, sup1_b:12917711.35, sup1_l:9871991.85,
     sup2_n:"CASSIO LEMOS NETO", sup2_c:13774, sup2_b:10077580.77, sup2_l:7927421.16,
     sup3_n:"DINHO SILVA", sup3_c:7106, sup3_b:7628845.51, sup3_l:6374284.71,
@@ -1182,36 +1184,28 @@ function buildP2(){
     var tabFState = 'todos';
 
     function renderResumo(data){
-      var totalC = data.reduce(function(a,r){ return a+r.C; },0);
-      var totalB = data.reduce(function(a,r){ return a+r.B; },0);
-      var totalL = data.reduce(function(a,r){ return a+r.L; },0);
-      var tkt    = totalC>0 ? Math.round(totalB/totalC) : 0;
+      var totalDig  = data.reduce(function(a,r){ return a+(r.C||0); },0);
+      var totalDes  = data.reduce(function(a,r){ return a+(r.Cdes||r.C||0); },0);
+      var totalB    = data.reduce(function(a,r){ return a+(r.B||0); },0);
+      var totalL    = data.reduce(function(a,r){ return a+(r.L||0); },0);
+      var tkt       = totalDes>0 ? Math.round(totalB/totalDes) : 0;
+      var conv      = totalDig>0 ? Math.round(totalDes/totalDig*100) : 0;
       var el = document.getElementById('tab_resumo');
       if(!el) return;
-      el.innerHTML =
-        '<div style="display:flex;flex-direction:column;gap:2px">'+
-          '<div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Tabelas</div>'+
-          '<div style="font-size:18px;font-weight:800;color:var(--cyan)">'+data.length+'</div>'+
-          '<div style="font-size:10px;color:var(--muted)">distintas</div>'+
-        '</div>'+
-        '<div style="width:1px;background:var(--border);margin:0 4px"></div>'+
-        '<div style="display:flex;flex-direction:column;gap:2px">'+
-          '<div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Contratos</div>'+
-          '<div style="font-size:18px;font-weight:800;color:var(--accent2)">'+totalC.toLocaleString('pt-BR')+'</div>'+
-          '<div style="font-size:10px;color:var(--muted)">no mês</div>'+
-        '</div>'+
-        '<div style="width:1px;background:var(--border);margin:0 4px"></div>'+
-        '<div style="display:flex;flex-direction:column;gap:2px">'+
-          '<div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Prod. Bruta</div>'+
-          '<div style="font-size:18px;font-weight:800;color:var(--accent2)">'+fmtB(totalB)+'</div>'+
-          '<div style="font-size:10px;color:var(--muted)">2S · visão fintech</div>'+
-        '</div>'+
-        '<div style="width:1px;background:var(--border);margin:0 4px"></div>'+
-        '<div style="display:flex;flex-direction:column;gap:2px">'+
-          '<div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Ticket Médio</div>'+
-          '<div style="font-size:18px;font-weight:800;color:var(--yellow)">R$ '+tkt.toLocaleString('pt-BR')+'</div>'+
-          '<div style="font-size:10px;color:var(--muted)">bruto / contrato</div>'+
+      var div = function(lbl,val,sub,cor){
+        return '<div style="display:flex;flex-direction:column;gap:2px">'+
+          '<div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">'+lbl+'</div>'+
+          '<div style="font-size:18px;font-weight:800;color:'+cor+'">'+val+'</div>'+
+          '<div style="font-size:10px;color:var(--muted)">'+sub+'</div>'+
         '</div>';
+      };
+      var sep = '<div style="width:1px;background:var(--border);margin:0 4px"></div>';
+      el.innerHTML =
+        div('Tabelas',    data.length,                        'distintas',          'var(--cyan)')   + sep +
+        div('Digitados',  totalDig.toLocaleString('pt-BR'),   'no mês',             'var(--text)')   + sep +
+        div('Desembolsados', totalDes.toLocaleString('pt-BR')+'<span style="font-size:11px;color:var(--muted);font-weight:500"> · '+conv+'%</span>', 'convertidos', 'var(--green)') + sep +
+        div('Prod. Bruta', fmtB(totalB),                      '2S · visão fintech', 'var(--accent2)') + sep +
+        div('Ticket Médio','R$ '+tkt.toLocaleString('pt-BR'), 'bruto / desembolsado','var(--yellow)');
     }
 
     function renderTabela(){
@@ -1220,19 +1214,22 @@ function buildP2(){
       var tbody = document.getElementById('tab_tbody');
       if(!tbody) return;
       if(!data.length){
-        tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:18px">Sem dados para o filtro selecionado</td></tr>';
+        tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:18px">Sem dados para o filtro selecionado</td></tr>';
         return;
       }
-      var maxB   = Math.max.apply(null, data.map(function(r){ return r.B; }));
-      var totalB = data.reduce(function(a,r){ return a+r.B; },0) || 1;
+      var maxB   = Math.max.apply(null, data.map(function(r){ return r.B||0; }));
+      var totalB = data.reduce(function(a,r){ return a+(r.B||0); },0) || 1;
       tbody.innerHTML = data.map(function(r,i){
-        var tkt   = r.C>0 ? 'R$ '+Math.round(r.B/r.C).toLocaleString('pt-BR') : '—';
-        var share = (r.B/totalB*100).toFixed(1);
-        var bar   = Math.round(r.B/maxB*100);
+        var cdes  = r.Cdes !== undefined ? r.Cdes : r.C;
+        var tkt   = cdes>0 ? 'R$ '+Math.round(r.B/cdes).toLocaleString('pt-BR') : '—';
+        var share = ((r.B||0)/totalB*100).toFixed(1);
+        var bar   = maxB>0 ? Math.round((r.B||0)/maxB*100) : 0;
+        var convRow = r.C>0 ? Math.round(cdes/r.C*100)+'%' : '—';
         return '<tr>'+
           '<td class="rank">'+(i+1)+'</td>'+
-          '<td style="font-size:12.5px;font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.Tabela||'—')+'</td>'+
-          '<td style="font-weight:600">'+r.C.toLocaleString('pt-BR')+'</td>'+
+          '<td style="font-size:12.5px;font-weight:600;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.Tabela||'—')+'</td>'+
+          '<td style="font-weight:500;color:var(--muted)">'+r.C.toLocaleString('pt-BR')+'</td>'+
+          '<td style="font-weight:700;color:var(--green)">'+cdes.toLocaleString('pt-BR')+'<span style="font-size:10px;color:var(--muted);font-weight:400"> · '+convRow+'</span></td>'+
           '<td class="td-bruto">'+fmtB(r.B)+'<div class="bw"><div class="bf" style="width:'+bar+'%;background:rgba(56,139,253,.7)"></div></div></td>'+
           '<td class="td-liq">'+fmtB(r.L)+'</td>'+
           '<td style="font-size:12px;color:var(--yellow);font-weight:700">'+tkt+'</td>'+
@@ -1533,15 +1530,15 @@ function buildP3() {
 
 // ===== P4 DATA =====
 const E = {
-  porProduto: {"CLT": {"total": 79550, "desemb": 56133, "canc": 23417, "and": 0, "bruta": 40629756.84, "liq": 31360019.48}, "FGTS": {"total": 1467, "desemb": 1089, "canc": 378, "and": 0, "bruta": 947398.15, "liq": 847172.55}},
-  porFundo: {"Anga": {"total": 30044, "desemb": 25031, "canc": 5013, "and": 0, "bruta": 14589080.78, "liq": 10972240.56, "conv": 83.3}, "HEAD": {"total": 1467, "desemb": 1089, "canc": 378, "and": 0, "bruta": 947398.15, "liq": 847172.55, "conv": 74.2}, "LA VIE PFO": {"total": 25126, "desemb": 11447, "canc": 13679, "and": 0, "bruta": 17362540.09, "liq": 14911627.6, "conv": 45.6}, "Nexa NXFS": {"total": 23933, "desemb": 19364, "canc": 4569, "and": 0, "bruta": 7920945.39, "liq": 4856384.58, "conv": 80.9}, "UY3 Asset": {"total": 447, "desemb": 291, "canc": 156, "and": 0, "bruta": 757190.58, "liq": 619766.74, "conv": 65.1}},
-  statusCompleto: [{"s": "Desembolsado", "v": 57224}, {"s": "Cancelado", "v": 19642}, {"s": "Ag. Assinatura", "v": 3704}, {"s": "Outros", "v": 246}, {"s": "Ag. Desembolso", "v": 158}, {"s": "Em Analise", "v": 48}],
-  mensal: [{"m": "Ago/25", "total": 1124, "desemb": 933, "canc": 130, "conv": 83.0}, {"m": "Set/25", "total": 3999, "desemb": 3240, "canc": 349, "conv": 81.0}, {"m": "Out/25", "total": 9678, "desemb": 8004, "canc": 1426, "conv": 82.7}, {"m": "Nov/25", "total": 3593, "desemb": 2332, "canc": 528, "conv": 64.9}, {"m": "Dez/25", "total": 8567, "desemb": 6375, "canc": 2192, "conv": 74.4}, {"m": "Jan/26", "total": 19824, "desemb": 12794, "canc": 6753, "conv": 64.5}, {"m": "Fev/26", "total": 15278, "desemb": 8673, "canc": 4838, "conv": 56.8}, {"m": "Mar/26", "total": 7249, "desemb": 6124, "canc": 1101, "conv": 84.5}, {"m": "Abr/26", "total": 5870, "desemb": 4762, "canc": 1052, "conv": 81.1}, {"m": "Mai/26", "total": 5840, "desemb": 3987, "canc": 1273, "conv": 68.3}],
+  porProduto: {"CLT": {"total": 79553, "desemb": 56133, "canc": 23420, "and": 0, "bruta": 40629756.84, "liq": 31360019.48}, "FGTS": {"total": 1467, "desemb": 1089, "canc": 378, "and": 0, "bruta": 947398.15, "liq": 847172.55}},
+  porFundo: {"Anga": {"total": 30044, "desemb": 25031, "canc": 5013, "and": 0, "bruta": 14589080.78, "liq": 10972240.56, "conv": 83.3}, "HEAD": {"total": 1467, "desemb": 1089, "canc": 378, "and": 0, "bruta": 947398.15, "liq": 847172.55, "conv": 74.2}, "LA VIE PFO": {"total": 25126, "desemb": 11447, "canc": 13679, "and": 0, "bruta": 17362540.09, "liq": 14911627.6, "conv": 45.6}, "Nexa NXFS": {"total": 23936, "desemb": 19364, "canc": 4572, "and": 0, "bruta": 7920945.39, "liq": 4856384.58, "conv": 80.9}, "UY3 Asset": {"total": 447, "desemb": 291, "canc": 156, "and": 0, "bruta": 757190.58, "liq": 619766.74, "conv": 65.1}},
+  statusCompleto: [{"s": "Desembolsado", "v": 57224}, {"s": "Cancelado", "v": 19642}, {"s": "Ag. Assinatura", "v": 3707}, {"s": "Outros", "v": 246}, {"s": "Ag. Desembolso", "v": 158}, {"s": "Em Analise", "v": 48}],
+  mensal: [{"m": "Ago/25", "total": 1124, "desemb": 933, "canc": 130, "conv": 83.0}, {"m": "Set/25", "total": 3999, "desemb": 3240, "canc": 349, "conv": 81.0}, {"m": "Out/25", "total": 9678, "desemb": 8004, "canc": 1426, "conv": 82.7}, {"m": "Nov/25", "total": 3593, "desemb": 2332, "canc": 528, "conv": 64.9}, {"m": "Dez/25", "total": 8567, "desemb": 6375, "canc": 2192, "conv": 74.4}, {"m": "Jan/26", "total": 19824, "desemb": 12794, "canc": 6753, "conv": 64.5}, {"m": "Fev/26", "total": 15278, "desemb": 8673, "canc": 4838, "conv": 56.8}, {"m": "Mar/26", "total": 7249, "desemb": 6124, "canc": 1101, "conv": 84.5}, {"m": "Abr/26", "total": 5870, "desemb": 4762, "canc": 1052, "conv": 81.1}, {"m": "Mai/26", "total": 5843, "desemb": 3987, "canc": 1273, "conv": 68.2}],
   mensalFGTS: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1089],
   mensalEC:   [929, 3235, 7991, 2338, 4730, 13937, 9155, 6148, 4770, 2900],
   mensalPorProduto: {"CLT": [929, 3235, 7991, 2338, 4730, 13937, 9155, 6148, 4770, 2900], "FGTS": [0, 0, 0, 0, 0, 0, 0, 0, 0, 1089]},
   prodFundoCompat:  {"CLT": ["Anga", "Nexa NXFS", "LA VIE PFO", "UY3 Asset"], "FGTS": ["HEAD"]},
-  periodos:         {"todos": {"porProduto": {"CLT": {"total": 79550, "desemb": 56134, "canc": 23416, "and": 0, "bruta": 40633442.82, "liq": 31363174.11}, "FGTS": {"total": 1467, "desemb": 1089, "canc": 378, "and": 0, "bruta": 947398.15, "liq": 847172.55}}, "porFundo": {"Anga": {"total": 30044, "desemb": 25031, "canc": 5013, "and": 0, "bruta": 14589080.78, "liq": 10972240.56, "conv": 83.3}, "HEAD": {"total": 1467, "desemb": 1089, "canc": 378, "and": 0, "bruta": 947398.15, "liq": 847172.55, "conv": 74.2}, "LA VIE PFO": {"total": 25126, "desemb": 11448, "canc": 13678, "and": 0, "bruta": 17366226.07, "liq": 14914782.23, "conv": 45.6}, "Nexa NXFS": {"total": 23933, "desemb": 19364, "canc": 4569, "and": 0, "bruta": 7920945.39, "liq": 4856384.58, "conv": 80.9}, "UY3 Asset": {"total": 447, "desemb": 291, "canc": 156, "and": 0, "bruta": 757190.58, "liq": 619766.74, "conv": 65.1}}, "statusCompleto": [{"s": "Desembolsado", "v": 57224}, {"s": "Cancelado", "v": 19642}, {"s": "Ag. Assinatura", "v": 3704}, {"s": "Outros", "v": 246}, {"s": "Ag. Desembolso", "v": 158}, {"s": "Em Analise", "v": 48}], "totais": {"total": 81023, "desemb": 57224, "canc": 19643, "and": 4156, "bruta": 41582885.19, "liq": 32212352.24}}, "mes": {"porProduto": {"CLT": {"total": 4375, "desemb": 2898, "canc": 1477, "and": 0, "bruta": 1712915.34, "liq": 1202717.53}, "FGTS": {"total": 1462, "desemb": 1088, "canc": 374, "and": 0, "bruta": 946794.68, "liq": 846588.08}}, "porFundo": {"Anga": {"total": 1659, "desemb": 1267, "canc": 392, "and": 0, "bruta": 997002.63, "liq": 762085.51, "conv": 76.4}, "HEAD": {"total": 1462, "desemb": 1088, "canc": 374, "and": 0, "bruta": 946794.68, "liq": 846588.08, "conv": 74.4}, "Nexa NXFS": {"total": 2716, "desemb": 1631, "canc": 1085, "and": 0, "bruta": 715912.71, "liq": 440632.02, "conv": 60.1}}, "statusCompleto": [{"s": "Desembolsado", "v": 3987}, {"s": "Cancelado", "v": 1273}, {"s": "Ag. Assinatura", "v": 460}, {"s": "Outros", "v": 105}, {"s": "Ag. Desembolso", "v": 15}], "totais": {"total": 5840, "desemb": 3987, "canc": 1273, "and": 580, "bruta": 2661754.24, "liq": 2051311.19}}, "7d": {"porProduto": {"CLT": {"total": 863, "desemb": 559, "canc": 304, "and": 0, "bruta": 336662.18, "liq": 236429.0}}, "porFundo": {"Anga": {"total": 296, "desemb": 235, "canc": 61, "and": 0, "bruta": 194510.41, "liq": 148918.81, "conv": 79.4}, "Nexa NXFS": {"total": 567, "desemb": 324, "canc": 243, "and": 0, "bruta": 142151.77, "liq": 87510.19, "conv": 57.1}}, "statusCompleto": [{"s": "Desembolsado", "v": 559}, {"s": "Ag. Assinatura", "v": 202}, {"s": "Cancelado", "v": 76}, {"s": "Outros", "v": 24}, {"s": "Ag. Desembolso", "v": 2}], "totais": {"total": 863, "desemb": 559, "canc": 76, "and": 228, "bruta": 336662.18, "liq": 236429.0}}, "hoje": {"porProduto": {"CLT": {"total": 40, "desemb": 16, "canc": 24, "and": 0, "bruta": 5155.0, "liq": 3167.94}}, "porFundo": {"Nexa NXFS": {"total": 40, "desemb": 16, "canc": 24, "and": 0, "bruta": 5155.0, "liq": 3167.94, "conv": 40.0}}, "statusCompleto": [{"s": "Ag. Assinatura", "v": 20}, {"s": "Desembolsado", "v": 16}, {"s": "Outros", "v": 2}, {"s": "Cancelado", "v": 1}, {"s": "Ag. Desembolso", "v": 1}], "totais": {"total": 40, "desemb": 16, "canc": 1, "and": 23, "bruta": 5155.0, "liq": 3167.94}}},
+  periodos:         {"todos": {"porProduto": {"CLT": {"total": 79553, "desemb": 56134, "canc": 23419, "and": 0, "bruta": 40633442.82, "liq": 31363174.11}, "FGTS": {"total": 1467, "desemb": 1089, "canc": 378, "and": 0, "bruta": 947398.15, "liq": 847172.55}}, "porFundo": {"Anga": {"total": 30044, "desemb": 25031, "canc": 5013, "and": 0, "bruta": 14589080.78, "liq": 10972240.56, "conv": 83.3}, "HEAD": {"total": 1467, "desemb": 1089, "canc": 378, "and": 0, "bruta": 947398.15, "liq": 847172.55, "conv": 74.2}, "LA VIE PFO": {"total": 25126, "desemb": 11448, "canc": 13678, "and": 0, "bruta": 17366226.07, "liq": 14914782.23, "conv": 45.6}, "Nexa NXFS": {"total": 23936, "desemb": 19364, "canc": 4572, "and": 0, "bruta": 7920945.39, "liq": 4856384.58, "conv": 80.9}, "UY3 Asset": {"total": 447, "desemb": 291, "canc": 156, "and": 0, "bruta": 757190.58, "liq": 619766.74, "conv": 65.1}}, "statusCompleto": [{"s": "Desembolsado", "v": 57224}, {"s": "Cancelado", "v": 19642}, {"s": "Ag. Assinatura", "v": 3707}, {"s": "Outros", "v": 246}, {"s": "Ag. Desembolso", "v": 158}, {"s": "Em Analise", "v": 48}], "totais": {"total": 81026, "desemb": 57224, "canc": 19643, "and": 4159, "bruta": 41582885.19, "liq": 32212352.24}}, "mes": {"porProduto": {"CLT": {"total": 4378, "desemb": 2898, "canc": 1480, "and": 0, "bruta": 1712915.34, "liq": 1202717.53}, "FGTS": {"total": 1462, "desemb": 1088, "canc": 374, "and": 0, "bruta": 946794.68, "liq": 846588.08}}, "porFundo": {"Anga": {"total": 1659, "desemb": 1267, "canc": 392, "and": 0, "bruta": 997002.63, "liq": 762085.51, "conv": 76.4}, "HEAD": {"total": 1462, "desemb": 1088, "canc": 374, "and": 0, "bruta": 946794.68, "liq": 846588.08, "conv": 74.4}, "Nexa NXFS": {"total": 2719, "desemb": 1631, "canc": 1088, "and": 0, "bruta": 715912.71, "liq": 440632.02, "conv": 60.0}}, "statusCompleto": [{"s": "Desembolsado", "v": 3987}, {"s": "Cancelado", "v": 1273}, {"s": "Ag. Assinatura", "v": 463}, {"s": "Outros", "v": 105}, {"s": "Ag. Desembolso", "v": 15}], "totais": {"total": 5843, "desemb": 3987, "canc": 1273, "and": 583, "bruta": 2661754.24, "liq": 2051311.19}}, "7d": {"porProduto": {"CLT": {"total": 866, "desemb": 559, "canc": 307, "and": 0, "bruta": 336662.18, "liq": 236429.0}}, "porFundo": {"Anga": {"total": 296, "desemb": 235, "canc": 61, "and": 0, "bruta": 194510.41, "liq": 148918.81, "conv": 79.4}, "Nexa NXFS": {"total": 570, "desemb": 324, "canc": 246, "and": 0, "bruta": 142151.77, "liq": 87510.19, "conv": 56.8}}, "statusCompleto": [{"s": "Desembolsado", "v": 559}, {"s": "Ag. Assinatura", "v": 205}, {"s": "Cancelado", "v": 76}, {"s": "Outros", "v": 24}, {"s": "Ag. Desembolso", "v": 2}], "totais": {"total": 866, "desemb": 559, "canc": 76, "and": 231, "bruta": 336662.18, "liq": 236429.0}}, "hoje": {"porProduto": {"CLT": {"total": 43, "desemb": 16, "canc": 27, "and": 0, "bruta": 5155.0, "liq": 3167.94}}, "porFundo": {"Nexa NXFS": {"total": 43, "desemb": 16, "canc": 27, "and": 0, "bruta": 5155.0, "liq": 3167.94, "conv": 37.2}}, "statusCompleto": [{"s": "Ag. Assinatura", "v": 23}, {"s": "Desembolsado", "v": 16}, {"s": "Outros", "v": 2}, {"s": "Cancelado", "v": 1}, {"s": "Ag. Desembolso", "v": 1}], "totais": {"total": 43, "desemb": 16, "canc": 1, "and": 26, "bruta": 5155.0, "liq": 3167.94}}},
 };
 
 const F = {periodo:'todos', produto:'todos', fundo:'todos', status:'todos'};
