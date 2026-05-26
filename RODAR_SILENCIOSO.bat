@@ -21,7 +21,7 @@ if errorlevel 1 (
 )
 
 cd /d "C:\Users\diego.povoas\Desktop\2S_BI"
-git add painel_bi_2s.html >> "%LOG%" 2>&1
+git add painel_bi_2s.html index.html >> "%LOG%" 2>&1
 git diff --cached --quiet
 if errorlevel 1 (
     git commit -m "Painel atualizado automaticamente" >> "%LOG%" 2>&1
