@@ -283,6 +283,72 @@ def calcular_metricas(df):
 
     mes_prod = mes_des.groupby('Produto').agg(C=('CCB','count'),B=('Valor Bruto','sum'),L=('Valor Líquido','sum')).reset_index() if len(mes_des)>0 else pd.DataFrame(columns=['Produto','C','B','L'])
     mes_fundo = mes_des.groupby('Fundo').agg(C=('CCB','count'),B=('Valor Bruto','sum'),L=('Valor Líquido','sum')).reset_index() if 'Fundo' in mes_des.columns and len(mes_des)>0 else pd.DataFrame(columns=['Fundo','C','B','L'])
+
+    # TABELAS do mês atual — todos os contratos DIGITADOS ou DESEMBOLSADOS no mês
+    _tab_col = 'Tabela Nome'
+    if _tab_col in df.columns:
+        _mes_str = data_hoje.strftime('%Y-%m')
+        # Contratos com atividade no mês: digitação OU desembolso
+        _mask_dig = pd.Series(False, index=df.index)
+        _mask_des2 = pd.Series(False, index=df.index)
+        if 'Data de Digitação' in df.columns:
+            _dp = df['Data de Digitação'].dt.to_period('M').astype(str)
+            _mask_dig = (_dp == _mes_str)
+        if 'Data do Desembolso' in df.columns:
+            _dp2 = df['Data do Desembolso'].dt.to_period('M').astype(str)
+            _mask_des2 = (_dp2 == _mes_str)
+        _tdf = df[_mask_dig | _mask_des2].copy()
+        # Remove linhas sem Tabela Nome
+        _tdf = _tdf[_tdf[_tab_col].notna()]
+        _tdf = _tdf[~_tdf[_tab_col].astype(str).str.strip().str.lower().isin(['', 'nan', 'none'])]
+
+        # Fundo: usa Fundo (Tabelas_CMS) como primário; fallback para coluna 'fundo' bruta do MySQL
+        if 'Fundo' not in _tdf.columns:
+            _tdf['Fundo'] = ''
+        if 'fundo' in _tdf.columns:
+            _null_fundo = _tdf['Fundo'].isna() | _tdf['Fundo'].astype(str).str.strip().str.lower().isin(['nan','none',''])
+            _tdf.loc[_null_fundo, 'Fundo'] = _tdf.loc[_null_fundo, 'fundo'].astype(str).str.upper()
+
+        def _clean_fundo(v):
+            s = str(v).strip()
+            return '' if s.lower() in ('nan', 'none', '') else s
+        def _tab_label_row(tab_nome, fundo_val):
+            fn = _clean_fundo(fundo_val)
+            return f'{tab_nome} - {fn}' if fn else str(tab_nome)
+
+        _grp_cols = [_tab_col, 'Fundo']
+        # Agrega total de contratos por (Tabela, Fundo)
+        _agg_tot = _tdf.groupby(_grp_cols, dropna=False).agg(
+            C=('CCB','count'), B=('Valor Bruto','sum'), L=('Valor Líquido','sum')
+        ).reset_index()
+        # Agrega apenas desembolsados (valores reais)
+        _tdf_des = _tdf[_tdf['Status'] == 'Desembolsado']
+        _agg_des = _tdf_des.groupby(_grp_cols, dropna=False).agg(
+            Cdes=('CCB','count'), Bdes=('Valor Bruto','sum'), Ldes=('Valor Líquido','sum')
+        ).reset_index() if len(_tdf_des) else pd.DataFrame(columns=_grp_cols+['Cdes','Bdes','Ldes'])
+        tab_mes_g = _agg_tot.merge(_agg_des, on=_grp_cols, how='left').fillna(0)
+        tab_mes_g['Bdes'] = tab_mes_g['Bdes'].round(2)
+        tab_mes_g['Ldes'] = tab_mes_g['Ldes'].round(2)
+        tab_mes_g = tab_mes_g.sort_values('Bdes', ascending=False)
+
+        def _row_to_dict(r):
+            return {'Tabela': _tab_label_row(r[_tab_col], r.get('Fundo','')),
+                    'C': int(r.C), 'Cdes': int(r.Cdes),
+                    'B': round(float(r.Bdes),2), 'L': round(float(r.Ldes),2)}
+        mes_tabela = [_row_to_dict(r) for _, r in tab_mes_g.iterrows()]
+
+        tab_mes_prod_dict = {}
+        if 'Produto' in _tdf.columns:
+            for _p, _pg in _tdf.groupby('Produto', dropna=False):
+                if str(_p).lower() in ('nan','none',''): continue
+                _at = _pg.groupby(_grp_cols, dropna=False).agg(C=('CCB','count'),B=('Valor Bruto','sum'),L=('Valor Líquido','sum')).reset_index()
+                _pg_des = _pg[_pg['Status']=='Desembolsado']
+                _ad = _pg_des.groupby(_grp_cols, dropna=False).agg(Cdes=('CCB','count'),Bdes=('Valor Bruto','sum'),Ldes=('Valor Líquido','sum')).reset_index() if len(_pg_des) else pd.DataFrame(columns=_grp_cols+['Cdes','Bdes','Ldes'])
+                _merged = _at.merge(_ad, on=_grp_cols, how='left').fillna(0).sort_values('Bdes', ascending=False)
+                tab_mes_prod_dict[str(_p)] = [_row_to_dict(r) for _, r in _merged.iterrows()]
+    else:
+        mes_tabela = []
+        tab_mes_prod_dict = {}
     mes_anterior_b = bruto[-2] if len(bruto) >= 2 else 0
     mes_anterior_c = contratos[-2] if len(contratos) >= 2 else 0
     var_b = round((proj_b/mes_anterior_b - 1)*100, 1) if mes_anterior_b else 0
@@ -488,6 +554,8 @@ def calcular_metricas(df):
         'mes_var_b': var_b,
         'mes_prod': {r.Produto:{'c':int(r.C),'b':round(r.B,2),'l':round(r.L,2)} for _,r in mes_prod.iterrows()} if len(mes_prod) else {},
         'mes_fundo': {r.Fundo:{'c':int(r.C),'b':round(r.B,2),'l':round(r.L,2)} for _,r in mes_fundo.iterrows()} if len(mes_fundo) else {},
+        'mes_tabela': mes_tabela,
+        'mes_tabela_prod': tab_mes_prod_dict,
         'hoje_data': data_hoje.strftime('%d/%m/%Y'),
         'hoje_c': hoje_c,
         'hoje_b': hoje_total_b,
@@ -672,6 +740,8 @@ def gerar_js_dados(m):
     mes_ant_b:{m['mes_ant_b']}, mes_ant_c:{m['mes_ant_c']}, mes_var_b:{m['mes_var_b']},
     mes_prod: {jss(mp)},
     mes_fundo: {jss(mf2)},
+    mes_tabela: {jss(m.get('mes_tabela',[]))},
+    mes_tabela_prod: {jss(m.get('mes_tabela_prod',{}))},
     hoje_data: {jss(m['hoje_data'])},
     hoje_c:{m['hoje_c']}, hoje_b:{m['hoje_b']}, hoje_l:{m['hoje_l']},
     hoje_fgts_c:{hoje_fgts_c}, hoje_fgts_b:{hoje_fgts_b}, hoje_fgts_l:{hoje_fgts_l},

@@ -394,6 +394,36 @@
     </div>
   </div>
 
+  <!-- ===== ANÁLISE DE TABELAS — Mês Atual ===== -->
+  <div class="card" id="card_tabelas" style="margin-bottom:14px">
+    <div class="ct">
+      <div>
+        An&aacute;lise de Tabelas
+        <span id="tab_mes_lbl" style="color:var(--accent2);font-size:12px;font-weight:400;margin-left:6px">M&ecirc;s Atual</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:10px;color:var(--muted);font-weight:600">PRODUTO</span>
+        <div class="f-btn-group" id="tab_f_prod">
+          <button class="f-btn active" data-tabf="todos">Todos</button>
+        </div>
+      </div>
+    </div>
+    <div id="tab_resumo" style="display:flex;gap:18px;padding:8px 2px 12px;border-bottom:1px solid var(--border);margin-bottom:8px;flex-wrap:wrap"></div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Tabela</th>
+          <th>Digitados</th>
+          <th style="color:var(--green)">Desembolsados</th>
+          <th style="color:var(--accent2)">Prod. Bruta</th>
+          <th style="color:var(--purple)">Prod. L&iacute;quida</th>
+          <th style="color:var(--yellow)">Ticket M&eacute;dio</th>
+          <th>Share</th>
+        </tr>
+      </thead>
+      <tbody id="tab_tbody"></tbody>
+    </table>
+  </div>
 
 </div>
 
@@ -485,17 +515,12 @@
   </div>
 
   <div class="g31">
-    <div class="card">
+    <div class="card" style="grid-column:1/-1">
       <div class="ct">Ranking de Parceiros <span class="sub"><span style="color:var(--accent2)">ordenado por bruta · 2S</span></span></div>
       <table>
-        <thead><tr><th>#</th><th>Parceiro</th><th>Contr.</th><th style="color:var(--accent2)">Prod. Bruta</th><th style="color:var(--purple)">Prod. Líquida</th><th>Share</th></tr></thead>
+        <thead><tr><th>#</th><th>Parceiro</th><th style="color:var(--muted);font-size:10px">Hierarquia</th><th>Contr.</th><th style="color:var(--accent2)">Prod. Bruta</th><th style="color:var(--purple)">Prod. Líquida</th><th>Share</th></tr></thead>
         <tbody id="c3_parc"></tbody>
       </table>
-    </div>
-    <div class="card">
-      <div class="ct">Fundos <span class="tag-b">Bruta · 2S</span></div>
-      <canvas id="c3_fundo" style="max-height:175px"></canvas>
-      <div id="c3_fleg" style="margin-top:9px"></div>
     </div>
   </div>
 </div>
@@ -529,10 +554,10 @@
         <span style="font-size:10px;color:var(--muted);font-weight:600">FUNDO</span>
         <div class="f-btn-group" id="f_fundo">
           <button class="f-btn active" data-group="fundo" data-val="todos">Todos</button>
-          <button class="f-btn" data-group="fundo" data-val="ANGÁ">ANGÁ</button>
-          <button class="f-btn" data-group="fundo" data-val="LA VIE">LA VIE</button>
-          <button class="f-btn" data-group="fundo" data-val="NEXXA">NEXXA</button>
-          <button class="f-btn" data-group="fundo" data-val="UY3">UY3</button>
+          <button class="f-btn" data-group="fundo" data-val="Anga">Anga</button>
+          <button class="f-btn" data-group="fundo" data-val="LA VIE PFO">LA VIE PFO</button>
+          <button class="f-btn" data-group="fundo" data-val="Nexa NXFS">Nexa NXFS</button>
+          <button class="f-btn" data-group="fundo" data-val="UY3 Asset">UY3 Asset</button>
           <button class="f-btn" data-group="fundo" data-val="HEAD">HEAD</button>
         </div>
       </div>
@@ -680,7 +705,7 @@ Chart.defaults.borderColor='#30363d';
 Chart.defaults.font.family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
 Chart.defaults.font.size=11;
 
-const FC={ANGÁ:'rgba(56,139,253,.8)','LA VIE':'rgba(137,87,229,.8)',NEXXA:'rgba(57,208,216,.8)',UY3:'rgba(210,153,34,.8)',HEAD:'rgba(248,81,73,.7)'};
+const FC={'Anga':'rgba(56,139,253,.8)','LA VIE PFO':'rgba(137,87,229,.8)','Nexa NXFS':'rgba(57,208,216,.8)','UY3 Asset':'rgba(210,153,34,.8)','HEAD':'rgba(248,81,73,.7)'};
 const fmtK=v=>v>=1000000?'R$ '+(v/1000000).toFixed(2)+'M':'R$ '+(v/1000).toFixed(0)+'K';
 const pt=n=>n.toLocaleString('pt-BR');
 const sn=n=>{const s=n.split(' - ');return s.length>1?s[1]:n;};
@@ -970,7 +995,7 @@ function buildP2(){
       if(ctx2p && prodNames2.length) new Chart(ctx2p,{type:'doughnut',data:{labels:prodNames2,datasets:[{data:prodNames2.map(function(p){return m.mes_prod[p].b;}),backgroundColor:prodNames2.map(function(p){return prodColors2[p]||'rgba(125,133,144,.8)';}),borderWidth:2,borderColor:'#161b22'}]},options:{responsive:true,cutout:'60%',plugins:{legend:{position:'right',labels:{boxWidth:8,padding:4,font:{size:10}}}}}});
     }
     // Por fundo do mes — tabela + mini donut
-    var fundoCls={"ANGA":"bb","LA VIE":"bp",NEXXA:"bc",UY3:"by",HEAD:"br"};
+    var fundoCls={"Anga":"bb","LA VIE PFO":"bp","Nexa NXFS":"bc","UY3 Asset":"by","HEAD":"br"};
     var fb=$("mes_fundo_tbody");
     if(fb && m.mes_fundo){
       var totalB=Object.values(m.mes_fundo).reduce(function(a,b){return a+b.b;},0)||1;
@@ -1059,7 +1084,7 @@ function buildP2(){
       });
     }
     // Por fundo
-    var fundoCls={"ANGA":"bb","LA VIE":"bp",NEXXA:"bc",UY3:"by",HEAD:"br"};
+    var fundoCls={"Anga":"bb","LA VIE PFO":"bp","Nexa NXFS":"bc","UY3 Asset":"by","HEAD":"br"};
     var fb=$("hoje_fundo_tbody");
     if(fb && m.hoje_fundo){
       fb.innerHTML=Object.keys(m.hoje_fundo).sort(function(a,b){return m.hoje_fundo[b].b-m.hoje_fundo[a].b;}).map(function(f){
@@ -1103,6 +1128,104 @@ function buildP2(){
           }
         });
       }
+    }
+  })();
+
+  // ── Análise de Tabelas — mês atual ─────────────────────────
+  (function(){
+    if(!D._meta) return;
+    var m = D._meta;
+    var tabData    = m.mes_tabela     || [];
+    var tabByProd  = m.mes_tabela_prod || {};
+    var card = document.getElementById('card_tabelas');
+    if(!tabData.length){ if(card) card.style.display='none'; return; }
+
+    var fmtB = function(v){ if(!v||v===0) return 'R$ 0'; return v>=1000000?'R$ '+(v/1000000).toFixed(2)+'M':v>=1000?'R$ '+(v/1000).toFixed(0)+'K':'R$ '+Math.round(v); };
+
+    // Label mês
+    var lblEl = document.getElementById('tab_mes_lbl');
+    if(lblEl && m.mes_lbl) lblEl.textContent = m.mes_lbl;
+
+    // Populate product filter buttons
+    var tabFProd = document.getElementById('tab_f_prod');
+    var prods = Object.keys(tabByProd).sort();
+    prods.forEach(function(p){
+      var btn = document.createElement('button');
+      btn.className = 'f-btn';
+      btn.setAttribute('data-tabf', p);
+      btn.textContent = p;
+      tabFProd.appendChild(btn);
+    });
+
+    var tabFState = 'todos';
+
+    function renderResumo(data){
+      var totalDig  = data.reduce(function(a,r){ return a+(r.C||0); },0);
+      var totalDes  = data.reduce(function(a,r){ return a+(r.Cdes||r.C||0); },0);
+      var totalB    = data.reduce(function(a,r){ return a+(r.B||0); },0);
+      var totalL    = data.reduce(function(a,r){ return a+(r.L||0); },0);
+      var tkt       = totalDes>0 ? Math.round(totalB/totalDes) : 0;
+      var conv      = totalDig>0 ? Math.round(totalDes/totalDig*100) : 0;
+      var el = document.getElementById('tab_resumo');
+      if(!el) return;
+      var div = function(lbl,val,sub,cor){
+        return '<div style="display:flex;flex-direction:column;gap:2px">'+
+          '<div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">'+lbl+'</div>'+
+          '<div style="font-size:18px;font-weight:800;color:'+cor+'">'+val+'</div>'+
+          '<div style="font-size:10px;color:var(--muted)">'+sub+'</div>'+
+        '</div>';
+      };
+      var sep = '<div style="width:1px;background:var(--border);margin:0 4px"></div>';
+      el.innerHTML =
+        div('Tabelas',    data.length,                        'distintas',          'var(--cyan)')   + sep +
+        div('Digitados',  totalDig.toLocaleString('pt-BR'),   'no mês',             'var(--text)')   + sep +
+        div('Desembolsados', totalDes.toLocaleString('pt-BR')+'<span style="font-size:11px;color:var(--muted);font-weight:500"> · '+conv+'%</span>', 'convertidos', 'var(--green)') + sep +
+        div('Prod. Bruta', fmtB(totalB),                      '2S · visão fintech', 'var(--accent2)') + sep +
+        div('Ticket Médio','R$ '+tkt.toLocaleString('pt-BR'), 'bruto / desembolsado','var(--yellow)');
+    }
+
+    function renderTabela(){
+      var data = tabFState==='todos' ? tabData : (tabByProd[tabFState]||[]);
+      renderResumo(data);
+      var tbody = document.getElementById('tab_tbody');
+      if(!tbody) return;
+      if(!data.length){
+        tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:18px">Sem dados para o filtro selecionado</td></tr>';
+        return;
+      }
+      var maxB   = Math.max.apply(null, data.map(function(r){ return r.B||0; }));
+      var totalB = data.reduce(function(a,r){ return a+(r.B||0); },0) || 1;
+      tbody.innerHTML = data.map(function(r,i){
+        var cdes  = r.Cdes !== undefined ? r.Cdes : r.C;
+        var tkt   = cdes>0 ? 'R$ '+Math.round(r.B/cdes).toLocaleString('pt-BR') : '—';
+        var share = ((r.B||0)/totalB*100).toFixed(1);
+        var bar   = maxB>0 ? Math.round((r.B||0)/maxB*100) : 0;
+        var convRow = r.C>0 ? Math.round(cdes/r.C*100)+'%' : '—';
+        return '<tr>'+
+          '<td class="rank">'+(i+1)+'</td>'+
+          '<td style="font-size:12.5px;font-weight:600;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.Tabela||'—')+'</td>'+
+          '<td style="font-weight:500;color:var(--muted)">'+r.C.toLocaleString('pt-BR')+'</td>'+
+          '<td style="font-weight:700;color:var(--green)">'+cdes.toLocaleString('pt-BR')+'<span style="font-size:10px;color:var(--muted);font-weight:400"> · '+convRow+'</span></td>'+
+          '<td class="td-bruto">'+fmtB(r.B)+'<div class="bw"><div class="bf" style="width:'+bar+'%;background:rgba(56,139,253,.7)"></div></div></td>'+
+          '<td class="td-liq">'+fmtB(r.L)+'</td>'+
+          '<td style="font-size:12px;color:var(--yellow);font-weight:700">'+tkt+'</td>'+
+          '<td style="font-size:11px;color:var(--muted)">'+share+'%</td>'+
+          '</tr>';
+      }).join('');
+    }
+
+    renderTabela();
+
+    // Filter click
+    if(tabFProd){
+      tabFProd.addEventListener('click', function(e){
+        var btn = e.target.closest('[data-tabf]');
+        if(!btn) return;
+        tabFState = btn.getAttribute('data-tabf');
+        tabFProd.querySelectorAll('.f-btn').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+        renderTabela();
+      });
     }
   })();
 
@@ -1261,40 +1384,24 @@ function renderP3() {
   } else {
     const totPB = parcData.reduce((a,b)=>a+b.B, 0);
     const maxPB = Math.max(...parcData.map(p=>p.B));
-    document.getElementById('c3_parc').innerHTML = parcData.map((p,i) =>
-      `<tr><td class="rank">${i+1}</td>
-      <td style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p['Nome parceiro']}</td>
+    document.getElementById('c3_parc').innerHTML = parcData.map((p,i) => {
+      const sup = (p.Superintendente||'').split(' - ').slice(1).join(' ') || '';
+      const reg = (p.Regional||'').split(' - ').slice(1).join(' ') || '';
+      const com = (p.Comercial||'').split(' - ').slice(1).join(' ') || '';
+      const hier = [sup, reg, com].filter(Boolean);
+      const hierHtml = hier.length
+        ? `<div style="font-size:10px;color:var(--muted);margin-top:2px;line-height:1.4">${hier.map((h,i)=>`<span style="opacity:.7">${['Sup','Reg','Com'][i]}:</span> ${h}`).join(' &nbsp;·&nbsp; ')}</div>`
+        : '';
+      return `<tr><td class="rank">${i+1}</td>
+      <td style="font-size:12px;max-width:260px"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p['Nome parceiro']}</div>${hierHtml}</td>
+      <td></td>
       <td>${pt(p.C)}</td>
       <td class="td-bruto">${fmtK(p.B)}<div class="bw"><div class="bf" style="width:${p.B/maxPB*100}%;background:rgba(56,139,253,.7)"></div></div></td>
       <td class="td-liq">${fmtK(p.L)}</td>
-      <td style="font-size:11px;color:var(--muted)">${(p.B/totPB*100).toFixed(1)}%</td></tr>`
-    ).join('');
+      <td style="font-size:11px;color:var(--muted)">${(p.B/totPB*100).toFixed(1)}%</td></tr>`;
+    }).join('');
   }
 
-  // Fundos (estático)
-  const fl2 = D.fundos.map(x=>x.f);
-  charts3.fundo = new Chart(document.getElementById('c3_fundo'), {
-    type:'pie',
-    data:{labels:fl2, datasets:[{data:D.fundos.map(x=>x.b), backgroundColor:fl2.map(f=>FC[f]||'rgba(125,133,144,.6)'), borderWidth:2, borderColor:'#161b22'}]},
-    options:{responsive:true, plugins:{legend:{display:false}}}
-  });
-  const tot = D.fundos.reduce((a,b)=>a+b.b, 0);
-  document.getElementById('c3_fleg').innerHTML = D.fundos.map(x => {
-    const pct = (x.b/tot*100).toFixed(1);
-    const cor = FC[x.f]||'rgba(125,133,144,.6)';
-    return `<div style="margin-bottom:8px">
-      <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px">
-        <div style="width:10px;height:10px;border-radius:3px;flex-shrink:0;background:${cor}"></div>
-        <div style="flex:1;font-size:12px;font-weight:600;color:var(--text)">${x.f}</div>
-        <div style="font-size:12px;font-weight:700;color:var(--accent2)">${fmtK(x.b)}</div>
-        <div style="font-size:11px;color:var(--purple);min-width:52px;text-align:right">${fmtK(x.l)}</div>
-        <div style="font-size:11px;font-weight:700;color:var(--muted);min-width:34px;text-align:right">${pct}%</div>
-      </div>
-      <div style="height:3px;border-radius:2px;background:rgba(255,255,255,.06);overflow:hidden">
-        <div style="height:3px;border-radius:2px;background:${cor};width:${pct}%"></div>
-      </div>
-    </div>`;
-  }).join('');
 
   // Chips
   const chips = document.getElementById('p3_chips');
