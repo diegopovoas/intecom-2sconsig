@@ -47,7 +47,7 @@ echo.
 echo  [Etapa 3/3] Publicando painel no GitHub...
 echo.
 cd /d "%~dp0"
-git add painel_bi_2s.html index.html
+git add painel_bi_2s.html index.html CNAME
 git diff --cached --quiet
 if errorlevel 1 (
     git commit -m "Painel atualizado automaticamente"
