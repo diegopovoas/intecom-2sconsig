@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2S Consig — Usuários</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d1117;color:#e6edf3;font-family:'Segoe UI',system-ui,sans-serif;padding:32px;max-width:900px;margin:0 auto}
+h1{font-size:20px;margin-bottom:4px} h1 span{color:#388bfd}
+.sub{color:#8b949e;font-size:12px;margin-bottom:24px}
+.err{display:none;background:#f8514918;border:1px solid #f8514940;border-radius:8px;padding:8px 12px;font-size:12px;color:#f85149;margin-bottom:12px;text-align:center}
+input,select{background:#161b22;color:#e6edf3;border:1px solid #30363d;border-radius:10px;padding:11px 14px;font-size:13px;width:100%;margin-bottom:10px}
+input:focus,select:focus{outline:none;border-color:#388bfd}
+button{padding:10px 16px;border-radius:8px;border:none;background:linear-gradient(135deg,#1f6feb,#388bfd);color:#fff;font-weight:700;font-size:12px;cursor:pointer}
+button.sec{background:none;border:1px solid #30363d;color:#8b949e}
+button:disabled{opacity:.6}
+table{width:100%;border-collapse:collapse;background:#161b22;border:1px solid #30363d;border-radius:12px;overflow:hidden}
+th{background:#0d1117;color:#8b949e;font-size:10px;text-transform:uppercase;letter-spacing:.7px;padding:10px 14px;text-align:left}
+td{padding:11px 14px;font-size:13px;border-top:1px solid #21262d}
+.bdg{display:inline-block;padding:2px 9px;border-radius:10px;font-size:10px;font-weight:700}
+.b-adm{background:#1f6feb22;color:#388bfd} .b-usr{background:#30363d;color:#8b949e}
+.b-blq{background:#f8514922;color:#f85149} .b-atv{background:#3fb95022;color:#3fb950}
+.acoes button{margin-right:6px;padding:6px 10px;font-size:11px}
+#card-login{max-width:360px;margin:80px auto}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:99}
+.modal{width:380px;background:#161b22;border:1px solid #30363d;border-radius:14px;padding:24px}
+.modal h2{font-size:15px;margin-bottom:14px}
+.lbl{font-size:10px;color:#8b949e;font-weight:700;text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:4px}
+.row{display:flex;gap:8px;margin-top:6px} .row button{flex:1;padding:11px}
+.topo{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+a{color:#388bfd;text-decoration:none;font-size:12px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const SUPA_URL='https://uhjnfdyfyealtmbldjso.supabase.co';
+const SUPA_KEY='sb_publishable_lQqWj9oquj5wsmI67NJDXA_1v3MKUNc';
+const $=id=>document.getElementById(id);
+
+function hdr(t){return {apikey:SUPA_KEY, Authorization:'Bearer '+(t||SUPA_KEY), 'Content-Type':'application/json'};}
+function sess(){try{const s=JSON.parse(localStorage.getItem('s2_sess'));if(s&&s.t&&Date.now()<(s.exp||0)-60000)return s;}catch(_){}return null;}
+
+async function rpc(fn,args){
+  const s=sess(); if(!s){telaLogin();throw new Error('sem sessão');}
+  const r=await fetch(SUPA_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:hdr(s.t),body:JSON.stringify(args||{})});
+  if(!r.ok){const j=await r.json().catch(()=>({}));throw new Error(j.message||('HTTP '+r.status));}
+  const tx=await r.text(); return tx?JSON.parse(tx):null;
+}
+
+function telaLogin(msg){
+  $('app').innerHTML='<div id="card-login"><h1>2S <span>CONSIG</span> — Usuários</h1>'
+    +'<div class="sub">acesso restrito a administradores</div>'
+    +'<div class="err" id="err" '+(msg?'style="display:block"':'')+'>'+(msg||'')+'</div>'
+    +'<input id="email" type="email" placeholder="seu e-mail">'
+    +'<input id="senha" type="password" placeholder="senha">'
+    +'<button style="width:100%" onclick="entrar()">Entrar</button></div>';
+  ['email','senha'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')entrar();}));
+}
+
+async function entrar(){
+  const email=$('email').value.trim().toLowerCase(), senha=$('senha').value;
+  const r=await fetch(SUPA_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:hdr(),body:JSON.stringify({email,password:senha})});
+  const j=await r.json();
+  if(!r.ok||!j.access_token){$('err').textContent='Usuário ou senha incorretos';$('err').style.display='block';return;}
+  localStorage.setItem('s2_sess',JSON.stringify({t:j.access_token,e:email,exp:Date.now()+(j.expires_in||3600)*1000}));
+  lista();
+}
+
+async function lista(){
+  $('app').innerHTML='<div class="sub">Carregando...</div>';
+  let users;
+  try{users=await rpc('admin_listar_usuarios');}
+  catch(e){telaLogin(e.message.includes('administradores')?'Acesso restrito a administradores':e.message);return;}
+  let h='<div class="topo"><div><h1>2S <span>CONSIG</span> — Usuários</h1>'
+    +'<div class="sub">'+users.length+' usuário(s) · <a href="index.html">← voltar ao painel</a></div></div>'
+    +'<button onclick="modalNovo()">+ Novo Usuário</button></div>'
+    +'<table><thead><tr><th>Login</th><th>Nome</th><th>Papel</th><th>Status</th><th>Ações</th></tr></thead><tbody>';
+  users.forEach(u=>{
+    h+='<tr style="'+(u.bloqueado?'opacity:.5':'')+'"><td>'+u.login+'</td><td>'+(u.nome||'')+'</td>'
+      +'<td><span class="bdg '+(u.role==='admin'?'b-adm':'b-usr')+'">'+u.role+'</span></td>'
+      +'<td><span class="bdg '+(u.bloqueado?'b-blq':'b-atv')+'">'+(u.bloqueado?'Bloqueado':'Ativo')+'</span></td>'
+      +'<td class="acoes">'
+      +'<button class="sec" onclick="editar(\''+u.login+'\',\''+(u.nome||'').replace(/'/g,"\\'")+'\',\''+u.role+'\')">✏️</button>'
+      +'<button class="sec" onclick="novaSenha(\''+u.login+'\')">🔑</button>'
+      +'<button class="sec" onclick="bloq(\''+u.login+'\','+(!u.bloqueado)+')">'+(u.bloqueado?'✅':'⛔')+'</button>'
+      +'<button class="sec" style="color:#f85149" onclick="excluir(\''+u.login+'\')">🗑</button>'
+      +'</td></tr>';
+  });
+  $('app').innerHTML=h+'</tbody></table>';
+}
+
+function modal(html){const bg=document.createElement('div');bg.className='modal-bg';bg.innerHTML='<div class="modal">'+html+'</div>';bg.onclick=e=>{if(e.target===bg)bg.remove();};document.body.appendChild(bg);return bg;}
+
+function modalNovo(){
+  const bg=modal('<h2>Novo Usuário</h2><div class="err" id="m-err"></div>'
+    +'<span class="lbl">E-mail (login)</span><input id="m-email" type="email">'
+    +'<span class="lbl">Senha inicial</span><input id="m-senha" type="text" placeholder="mínimo 6 caracteres">'
+    +'<span class="lbl">Nome</span><input id="m-nome">'
+    +'<span class="lbl">Papel</span><select id="m-role"><option value="user">Usuário</option><option value="admin">Admin</option></select>'
+    +'<div class="row"><button class="sec" onclick="this.closest(\'.modal-bg\').remove()">Cancelar</button>'
+    +'<button onclick="criar(this)">Criar</button></div>');
+}
+async function criar(btn){
+  try{
+    await rpc('admin_criar_usuario',{p_email:$('m-email').value.trim().toLowerCase(),p_senha:$('m-senha').value,p_nome:$('m-nome').value.trim(),p_role:$('m-role').value});
+    btn.closest('.modal-bg').remove();lista();
+  }catch(e){$('m-err').textContent=e.message;$('m-err').style.display='block';}
+}
+
+function editar(login,nome,role){
+  modal('<h2>Editar — '+login+'</h2><div class="err" id="m-err"></div>'
+    +'<span class="lbl">Nome</span><input id="m-nome" value="'+nome+'">'
+    +'<span class="lbl">Papel</span><select id="m-role"><option value="user"'+(role==='user'?' selected':'')+'>Usuário</option><option value="admin"'+(role==='admin'?' selected':'')+'>Admin</option></select>'
+    +'<div class="row"><button class="sec" onclick="this.closest(\'.modal-bg\').remove()">Cancelar</button>'
+    +'<button onclick="salvarEdicao(this,\''+login+'\')">Salvar</button></div>');
+}
+async function salvarEdicao(btn,login){
+  try{
+    await rpc('admin_editar_usuario',{alvo:login,p_nome:$('m-nome').value.trim(),p_role:$('m-role').value});
+    btn.closest('.modal-bg').remove();lista();
+  }catch(e){$('m-err').textContent=e.message;$('m-err').style.display='block';}
+}
+
+async function novaSenha(login){
+  const n=prompt('Nova senha para '+login+' (mínimo 6 caracteres):');
+  if(n===null)return;
+  if(n.length<6){alert('Mínimo 6 caracteres.');return;}
+  try{await rpc('admin_reset_senha',{alvo:login,nova:n});alert('Senha alterada!');}
+  catch(e){alert('Erro: '+e.message);}
+}
+async function bloq(login,b){
+  if(!confirm((b?'Bloquear ':'Desbloquear ')+login+'?'))return;
+  try{await rpc('admin_bloquear',{alvo:login,bloquear:b});lista();}catch(e){alert('Erro: '+e.message);}
+}
+async function excluir(login){
+  if(!confirm('EXCLUIR '+login+'?'))return;
+  try{await rpc('admin_excluir',{alvo:login});lista();}catch(e){alert('Erro: '+e.message);}
+}
+
+sess()?lista():telaLogin();
+</script>
+</body>
+</html>

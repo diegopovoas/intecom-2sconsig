@@ -1,0 +1,47 @@
+# Segredos e dados locais
+credenciais_2s.txt
+credenciais_db.txt
+painel_usuarios.local.json
+usuarios.json
+*.bak.xlsx
+
+# Dados brutos (nao versionar)
+dados_2s.xlsx
+producao.parquet
+
+# Google Drive temp
+.tmp.driveupload/
+.tmp.drivedownload/
+
+# Arquivos temporarios
+_check.py
+base_tratada_2s*.xlsx
+painel_bi_2s_FINAL.html
+
+# Python
+__pycache__/
+*.py[cod]
+.Python
+venv/
+.venv/
+
+# Sa√≠das (opcional: descomente se n√£o quiser versionar relat√≥rios)
+# csv_processados/
+credenciais_db.txt
+
+# Local Netlify folder
+.netlify
+
+# Supabase
+_supabase/config.json
+
+# Painel com dados ó agora protegido no Supabase, nunca mais publicar
+painel_bi_2s.html
+painel_bi_2s_FINAL.html
+
+# Bloqueados pelo SentinelOne (nao usados ó servidor local antigo)
+servidor.py
+INICIAR_SERVIDOR.bat
+
+# Documentacao interna (contem detalhes operacionais)
+DOCUMENTACAO.md

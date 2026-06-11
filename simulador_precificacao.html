@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Precificação — 2S Consig</title>
+  <style>
+    :root {
+      --navy:   #0f2044;
+      --blue:   #1565c0;
+      --green:  #1b5e20;
+      --green2: #2e7d32;
+      --red:    #b71c1c;
+      --red2:   #c62828;
+      --orange: #e65100;
+      --bg:     #eef2f7;
+      --card:   #ffffff;
+      --border: #dce3ed;
+      --text:   #1a2332;
+      --muted:  #546e7a;
+      --light:  #f5f8fc;
+      --pos-bg: #e8f5e9;
+      --pos-border: #81c784;
+      --neg-bg: #ffebee;
+      --neg-border: #ef9a9a;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13.5px;
+      min-height: 100vh;
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      background: linear-gradient(135deg, #0a1628 0%, var(--navy) 60%, #1a3a6e 100%);
+      padding: 16px 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 3px 16px rgba(0,0,0,0.3);
+    }
+    .brand { display: flex; align-items: baseline; gap: 12px; }
+    .brand-name {
+      color: #fff;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+    }
+    .brand-sep { color: rgba(255,255,255,0.25); font-size: 20px; }
+    .brand-sub { color: rgba(255,255,255,0.65); font-size: 14px; font-weight: 400; }
+
+
+    /* ─── MAIN ─── */
+    main { padding: 26px 36px 36px; max-width: 1320px; margin: 0 auto; }
+
+    /* ─── PARAMS CARD ─── */
+    .params-card {
+      background: var(--card);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 20px 26px 22px;
+      margin-bottom: 22px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    }
+    .section-label {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.1px;
+      color: var(--muted);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* Subgroups dentro do params-card */
+    .params-subgroup {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 14px;
+      border-radius: 10px;
+    }
+    .params-subgroup + .params-subgroup { margin-top: 10px; }
+
+    .params-subgroup.receita  { background: #f0faf1; border: 1.5px solid #c8e6c9; }
+    .params-subgroup.custos   { background: #fff8f5; border: 1.5px solid #ffccbc; }
+
+    .psg-label {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      padding: 4px 0;
+    }
+    .receita  .psg-label { color: var(--green2); }
+    .custos   .psg-label { color: #bf360c; }
+
+    .psg-sep {
+      width: 1px;
+      align-self: stretch;
+      flex-shrink: 0;
+    }
+    .receita .psg-sep { background: #a5d6a7; }
+    .custos  .psg-sep { background: #ffab91; }
+
+    .params-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .param-group { flex: 1; min-width: 120px; }
+    .param-group > label {
+      display: block;
+      font-size: 9.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
+    }
+    .receita .param-group > label { color: var(--green2); }
+    .custos  .param-group > label { color: #bf360c; }
+
+    .param-wrap { position: relative; }
+    .param-suf {
+      position: absolute;
+      right: 9px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      font-weight: 600;
+      pointer-events: none;
+      user-select: none;
+    }
+    .receita .param-suf { color: var(--green2); }
+    .custos  .param-suf { color: #bf360c; }
+
+    .param-input {
+      width: 100%;
+      padding: 9px 28px 9px 10px;
+      border: 1.5px solid;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      transition: border-color 0.15s, background 0.15s;
+      -moz-appearance: textfield;
+    }
+    .param-input::-webkit-inner-spin-button,
+    .param-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+    .receita .param-input {
+      color: var(--green2);
+      border-color: #a5d6a7;
+      background: #f9fdf9;
+    }
+    .receita .param-input:focus { outline: none; border-color: var(--green2); background: #fff; }
+
+    .custos .param-input {
+      color: #bf360c;
+      border-color: #ffab91;
+      background: #fffaf8;
+    }
+    .custos .param-input:focus { outline: none; border-color: #bf360c; background: #fff; }
+
+    /* ─── TICKETS GRID ─── */
+    .tickets-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+
+    .ticket-card {
+      background: var(--card);
+      border-radius: 14px;
+      border: 2px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      transition: border-color 0.25s;
+    }
+    .ticket-card.is-neg { border-color: var(--neg-border); }
+    .ticket-card.is-pos { border-color: var(--pos-border); }
+
+    .ticket-head {
+      padding: 13px 22px;
+      background: var(--navy);
+    }
+    .ticket-head h2 {
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .ticket-body { padding: 20px 22px; }
+
+    /* Bruto input */
+    .bruto-row { margin-bottom: 18px; }
+    .bruto-row > label {
+      display: block;
+      font-size: 9.5px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+    }
+    .bruto-wrap {
+      display: flex;
+      align-items: stretch;
+      border: 2px solid var(--blue);
+      border-radius: 9px;
+      overflow: hidden;
+      background: #fff;
+      transition: border-color 0.15s;
+    }
+    .bruto-wrap:focus-within { border-color: var(--navy); }
+    .bruto-pfx {
+      padding: 10px 13px;
+      background: #e3eaf8;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 700;
+      border-right: 1.5px solid #b3c7e8;
+      display: flex;
+      align-items: center;
+    }
+    .bruto-input {
+      flex: 1;
+      padding: 10px 14px;
+      border: none;
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--navy);
+      background: transparent;
+      min-width: 0;
+      -moz-appearance: textfield;
+    }
+    .bruto-input::-webkit-inner-spin-button,
+    .bruto-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .bruto-input:focus { outline: none; }
+
+    /* Result blocks */
+    .result-block { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .rb-title {
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #90a4ae;
+      margin-bottom: 7px;
+    }
+
+    .rrow {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 3.5px 0;
+    }
+    .rrow + .rrow { border-top: 1px dashed #f2f4f7; }
+    .rl { font-size: 12.5px; color: var(--text); }
+    .rl.bold { font-weight: 700; }
+    .rv { font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+    .rv.rec  { color: var(--green2); }
+    .rv.cst  { color: var(--red2); }
+    .rv.neu  { color: var(--blue); }
+    .rv.sub  { color: var(--muted); font-weight: 500; font-size: 11px; }
+    .rv.bold-pos { color: var(--green2); font-weight: 800; font-size: 13px; }
+    .rv.bold-neg { color: var(--red2);   font-weight: 800; font-size: 13px; }
+
+    .pct-badge {
+      display: inline-block;
+      background: #f0f4f8;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-left: 6px;
+    }
+    .pct-badge.pos { background: #e8f5e9; color: var(--green2); }
+    .pct-badge.neg { background: #ffebee; color: var(--red2); }
+
+    /* Final spread card */
+    .spread-final {
+      margin-top: 14px;
+      padding: 16px 18px;
+      border-radius: 10px;
+      background: var(--pos-bg);
+      border: 2px solid var(--pos-border);
+      transition: all 0.25s;
+    }
+    .spread-final.neg { background: var(--neg-bg); border-color: var(--neg-border); }
+
+    .sf-label {
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--green);
+      margin-bottom: 6px;
+    }
+    .spread-final.neg .sf-label { color: var(--red); }
+
+    .sf-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+    .sf-rs {
+      font-size: 30px;
+      font-weight: 900;
+      color: var(--green);
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+    .spread-final.neg .sf-rs { color: var(--red); }
+    .sf-pct {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--green);
+    }
+    .spread-final.neg .sf-pct { color: var(--red); }
+
+    /* Alert box */
+    .alert-box {
+      display: none;
+      margin-top: 12px;
+      padding: 12px 14px;
+      background: #fff8e1;
+      border: 1.5px solid #ffc107;
+      border-radius: 9px;
+      font-size: 12px;
+      line-height: 1.75;
+      color: #4e342e;
+    }
+    .alert-box.show { display: block; }
+    .alert-box strong { font-weight: 700; color: var(--orange); }
+    .alert-title { font-weight: 800; color: var(--orange); font-size: 12.5px; margin-bottom: 4px; }
+    .alert-item { padding-left: 4px; }
+    .alert-item::before { content: '• '; color: var(--orange); }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 18px;
+      color: #90a4ae;
+      font-size: 11px;
+    }
+
+    /* Print */
+    @media print {
+      header { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .spread-final { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="brand-name">2S Consig</span>
+    <span class="brand-sep">|</span>
+    <span class="brand-sub">Simulador de Precificação</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- Parâmetros Compartilhados -->
+  <div class="params-card">
+    <div class="section-label">Parâmetros da Tabela</div>
+
+    <!-- Receita -->
+    <div class="params-subgroup receita">
+      <span class="psg-label">Receita</span>
+      <div class="psg-sep"></div>
+      <div class="params-row">
+        <div class="param-group">
+          <label for="p-aggio">Agio (%)</label>
+          <div class="param-wrap">
+            <input id="p-aggio" class="param-input" type="number" value="7" step="0.1" min="0">
+            <span class="param-suf">%</span>
+          </div>
+        </div>
+        <div class="param-group">
+          <label for="p-tac">TAC / TC (%)</label>
+          <div class="param-wrap">
+            <input id="p-tac" class="param-input" type="number" value="30" step="0.1" min="0">
+            <span class="param-suf">%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custos / Despesas / Repasse -->
+    <div class="params-subgroup custos">
+      <span class="psg-label">Custos / Repasse</span>
+      <div class="psg-sep"></div>
+      <div class="params-row">
+        <div class="param-group">
+          <label for="p-iof">IOF (%)</label>
+          <div class="param-wrap">
+            <input id="p-iof" class="param-input" type="number" value="3.25" step="0.01" min="0">
+            <span class="param-suf">%</span>
+          </div>
+        </div>
+        <div class="param-group">
+          <label for="p-desp">Desp. Banco (R$)</label>
+          <div class="param-wrap">
+            <input id="p-desp" class="param-input" type="number" value="1.20" step="0.01" min="0">
+            <span class="param-suf">R$</span>
+          </div>
+        </div>
+        <div class="param-group">
+          <label for="p-form">Formalizacao (R$)</label>
+          <div class="param-wrap">
+            <input id="p-form" class="param-input" type="number" value="5.80" step="0.01" min="0">
+            <span class="param-suf">R$</span>
+          </div>
+        </div>
+        <div class="param-group">
+          <label for="p-cef">Consulta Caixa (R$)</label>
+          <div class="param-wrap">
+            <input id="p-cef" class="param-input" type="number" value="1.84" step="0.01" min="0">
+            <span class="param-suf">R$</span>
+          </div>
+        </div>
+        <div class="param-group">
+          <label for="p-rep">Repasse Promotora (%)</label>
+          <div class="param-wrap">
+            <input id="p-rep" class="param-input" type="number" value="42" step="0.5" min="0" max="100">
+            <span class="param-suf">%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Cards de Ticket -->
+  <div class="tickets-grid">
+
+    <!-- Ticket Mínimo -->
+    <div class="ticket-card" id="card-min">
+      <div class="ticket-head"><h2>Ticket Minimo</h2></div>
+      <div class="ticket-body">
+        <div class="bruto-row">
+          <label>Valor Bruto (Emissao)</label>
+          <div class="bruto-wrap">
+            <span class="bruto-pfx">R$</span>
+            <input id="bruto-min" class="bruto-input" type="number" value="120" step="10" min="0.01">
+          </div>
+        </div>
+        <div id="res-min"></div>
+      </div>
+    </div>
+
+    <!-- Ticket Máximo -->
+    <div class="ticket-card" id="card-max">
+      <div class="ticket-head"><h2>Ticket Maximo</h2></div>
+      <div class="ticket-body">
+        <div class="bruto-row">
+          <label>Valor Bruto (Emissao)</label>
+          <div class="bruto-wrap">
+            <span class="bruto-pfx">R$</span>
+            <input id="bruto-max" class="bruto-input" type="number" value="17800" step="100" min="0.01">
+          </div>
+        </div>
+        <div id="res-max"></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>2S Consig &middot; Simulador de Precificacao</footer>
+
+<script>
+  const el = id => document.getElementById(id);
+
+  function brl(v) {
+    const s = Math.abs(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return (v < 0 ? '-' : '') + 'R$ ' + s;
+  }
+
+  function pct(v) {
+    return (v * 100).toFixed(2) + '%';
+  }
+
+  function getParams() {
+    return {
+      aggio : (parseFloat(el('p-aggio').value) || 0) / 100,
+      tac   : (parseFloat(el('p-tac').value)   || 0) / 100,
+      iof   : (parseFloat(el('p-iof').value)   || 0) / 100,
+      desp  :  parseFloat(el('p-desp').value)  || 0,
+      form  :  parseFloat(el('p-form').value)  || 0,
+      cef   :  parseFloat(el('p-cef').value)   || 0,
+      rep   : (parseFloat(el('p-rep').value)   || 0) / 100,
+    };
+  }
+
+  function calc(bruto, p) {
+    const tacRS    = bruto * p.tac;
+    const agioRS   = bruto * p.aggio;
+    const iofRS    = bruto * p.iof;
+    const liquido  = bruto - tacRS - iofRS - p.desp;
+
+    const spreadBrutoRS  = tacRS + agioRS;
+    const spreadBrutoPct = bruto > 0 ? spreadBrutoRS / bruto : 0;
+
+    const totalCustoRS   = p.form + p.cef;
+    const spreadContraRS = spreadBrutoRS - totalCustoRS;
+    const spreadContraPct = bruto > 0 ? spreadContraRS / bruto : 0;
+
+    const baseRepasse  = Math.max(0, liquido);
+    const repasseRS    = baseRepasse * p.rep;
+    const spreadFinalRS  = spreadContraRS - repasseRS;
+    const spreadFinalPct = bruto > 0 ? spreadFinalRS / bruto : 0;
+
+    return { tacRS, agioRS, iofRS, liquido, spreadBrutoRS, spreadBrutoPct,
+             totalCustoRS, spreadContraRS, spreadContraPct,
+             baseRepasse, repasseRS, spreadFinalRS, spreadFinalPct };
+  }
+
+  // Ticket minimo para breakeven (spread final = 0)
+  // spreadFinal = bruto*(tac+aggio) - (form+cef) - (bruto*(1-tac-iof) - desp)*rep = 0
+  // bruto*[(tac+aggio) - (1-tac-iof)*rep] = (form+cef) - desp*rep
+  function breakevenTicket(p) {
+    const denom = (p.tac + p.aggio) - (1 - p.tac - p.iof) * p.rep;
+    if (denom <= 0) return null;
+    const v = ((p.form + p.cef) - p.desp * p.rep) / denom;
+    return v > 0 ? v : null;
+  }
+
+  // TAC minima para breakeven dado bruto
+  // bruto*tac*(1+rep) = (form+cef) + bruto*rep - bruto*aggio - bruto*iof*rep - desp*rep
+  function breakevenTAC(bruto, p) {
+    if (bruto <= 0) return null;
+    const rhs = (p.form + p.cef) + bruto * p.rep - bruto * p.aggio - bruto * p.iof * p.rep - p.desp * p.rep;
+    const denom = bruto * (1 + p.rep);
+    const v = rhs / denom;
+    return (isFinite(v) && v >= 0) ? v : null;
+  }
+
+  // Repasse maximo para breakeven dado bruto (reduzir repasse para zerar spread negativo)
+  // rep_max = spreadContraRS / baseRepasse
+  function breakevenRepasse(bruto, p) {
+    if (bruto <= 0) return null;
+    const spreadContra = bruto * (p.tac + p.aggio) - (p.form + p.cef);
+    const base = Math.max(0, bruto - bruto * p.tac - bruto * p.iof - p.desp);
+    if (base <= 0) return null;
+    const v = spreadContra / base;
+    return (isFinite(v) && v >= 0 && v < p.rep) ? v : null;
+  }
+
+  function row(label, value, rvClass, pctVal, pctClass) {
+    const pctHtml = pctVal !== undefined
+      ? `<span class="pct-badge ${pctClass || ''}">${pct(pctVal)}</span>`
+      : '';
+    return `<div class="rrow">
+      <span class="rl">${label}</span>
+      <span class="rv ${rvClass}">${value}${pctHtml}</span>
+    </div>`;
+  }
+
+  function boldRow(label, value, rvClass, pctVal, pctClass) {
+    const pctHtml = pctVal !== undefined
+      ? `<span class="pct-badge ${pctClass || ''}">${pct(pctVal)}</span>`
+      : '';
+    return `<div class="rrow">
+      <span class="rl bold">${label}</span>
+      <span class="rv ${rvClass}">${value}${pctHtml}</span>
+    </div>`;
+  }
+
+  function render(suffix, bruto, p) {
+    const c = calc(bruto, p);
+    const neg = c.spreadFinalRS < 0;
+
+    // Card border
+    const card = el('card-' + suffix);
+    card.classList.toggle('is-neg', neg);
+    card.classList.toggle('is-pos', !neg && bruto > 0);
+
+    // Breakeven suggestions
+    const bTicket  = breakevenTicket(p);
+    const bTAC     = breakevenTAC(bruto, p);
+    const bRepasse = breakevenRepasse(bruto, p);
+
+    let alertHtml = '';
+    if (neg) {
+      const lines = [];
+      if (bTicket !== null) {
+        const diff = bTicket - bruto;
+        lines.push(`<div class="alert-item">Aumentar o ticket em <strong>${brl(diff)}</strong> &mdash; m&iacute;nimo necess&aacute;rio: <strong>${brl(bTicket)}</strong></div>`);
+      } else {
+        lines.push(`<div class="alert-item">N&atilde;o h&aacute; ticket que cubra os custos com estes par&acirc;metros</div>`);
+      }
+      if (bTAC !== null && bTAC > p.tac) {
+        const diff = (bTAC - p.tac) * 100;
+        lines.push(`<div class="alert-item">Aumentar a TAC em <strong>+${diff.toFixed(2)} p.p.</strong> &mdash; m&iacute;nimo: <strong>${(bTAC * 100).toFixed(2)}%</strong></div>`);
+      }
+      if (bRepasse !== null) {
+        const diff = (p.rep - bRepasse) * 100;
+        lines.push(`<div class="alert-item">Reduzir o repasse em <strong>&minus;${diff.toFixed(2)} p.p.</strong> &mdash; m&aacute;ximo: <strong>${(bRepasse * 100).toFixed(2)}%</strong></div>`);
+      }
+      alertHtml = `<div class="alert-box show">
+        <div class="alert-title">Spread negativo &mdash; para atingir breakeven:</div>
+        ${lines.join('')}
+      </div>`;
+    }
+
+    el('res-' + suffix).innerHTML = `
+      <div class="result-block">
+        <div class="rb-title">Dados da Operacao</div>
+        ${row('TAC / TC (R$)',       '&minus;' + brl(c.tacRS),  'cst')}
+        ${row('IOF (R$)',            '&minus;' + brl(c.iofRS),  'cst')}
+        ${row('Despesas Banco (R$)', '&minus;' + brl(p.desp),   'cst')}
+        ${boldRow('Liquido ao cliente', brl(c.liquido), c.liquido >= 0 ? 'neu' : 'cst')}
+      </div>
+
+      <div class="result-block">
+        <div class="rb-title">Spread 2S &mdash; Pre-Repasse</div>
+        ${row('R$ TC (receita)',     '+' + brl(c.tacRS),  'rec')}
+        ${row('R$ Agio (receita)',   '+' + brl(c.agioRS), 'rec')}
+        ${boldRow('Spread Bruto', brl(c.spreadBrutoRS), 'rec', c.spreadBrutoPct, 'pos')}
+        ${row('Custo Formalizacao', '&minus;' + brl(p.form), 'cst')}
+        ${row('Consulta Caixa',     '&minus;' + brl(p.cef),  'cst')}
+        ${boldRow('Spread Contrato',
+          brl(c.spreadContraRS),
+          c.spreadContraRS >= 0 ? 'bold-pos' : 'bold-neg',
+          c.spreadContraPct,
+          c.spreadContraPct >= 0 ? 'pos' : 'neg')}
+      </div>
+
+      <div class="result-block">
+        <div class="rb-title">Repasse ao Parceiro</div>
+        ${row('Base de repasse (liquido)', brl(c.baseRepasse), 'sub')}
+        ${row('Repasse promotora (' + (p.rep * 100).toFixed(1) + '%)', '&minus;' + brl(c.repasseRS), 'cst')}
+      </div>
+
+      <div class="spread-final ${neg ? 'neg' : ''}">
+        <div class="sf-label">${neg ? 'Spread Negativo' : 'Spread Final 2S'}</div>
+        <div class="sf-row">
+          <span class="sf-rs">${brl(c.spreadFinalRS)}</span>
+          <span class="sf-pct">${pct(c.spreadFinalPct)}</span>
+        </div>
+      </div>
+
+      ${alertHtml}
+    `;
+  }
+
+  function update() {
+    const p    = getParams();
+    const bMin = parseFloat(el('bruto-min').value) || 0;
+    const bMax = parseFloat(el('bruto-max').value) || 0;
+    render('min', bMin, p);
+    render('max', bMax, p);
+
+  }
+
+  const ids = ['p-aggio','p-tac','p-iof','p-desp','p-form','p-cef','p-rep','bruto-min','bruto-max'];
+  ids.forEach(id => el(id).addEventListener('input', update));
+
+  update();
+</script>
+
+</body>
+</html>

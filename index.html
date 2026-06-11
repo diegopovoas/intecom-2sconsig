@@ -1,0 +1,98 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2S Consig — Gestão</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d1117;color:#e6edf3;font-family:'Segoe UI',system-ui,sans-serif;
+  min-height:100vh;display:flex;align-items:center;justify-content:center}
+.card{width:360px;background:#161b22;border:1px solid #30363d;border-radius:16px;padding:32px 28px}
+.logo{text-align:center;font-weight:800;font-size:22px;letter-spacing:.5px;margin-bottom:2px}
+.sub{text-align:center;color:#8b949e;font-size:12px;margin-bottom:22px}
+.err{display:none;background:#f8514918;border:1px solid #f8514940;border-radius:8px;
+  padding:8px 12px;font-size:12px;color:#f85149;margin-bottom:12px;text-align:center}
+input{width:100%;background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:10px;
+  padding:12px 14px;font-size:13px;margin-bottom:10px}
+input:focus{outline:none;border-color:#388bfd}
+button{width:100%;padding:12px;border-radius:10px;border:none;margin-top:4px;
+  background:linear-gradient(135deg,#1f6feb,#388bfd);color:#fff;font-weight:700;font-size:13px;cursor:pointer}
+button:disabled{opacity:.6}
+.carregando{text-align:center;color:#8b949e;font-size:13px}
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div style="text-align:center;margin-bottom:10px"><svg style="width:64px;height:auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450.56 364.43"><path fill="#fff" d="M384.2,130.35c-9.68-6.52-21.17-9.78-32.82-9.78h-72.09c-4.85,0-8.77-3.99-8.71-8.87.06-5.26,4.32-9.48,9.55-9.47l99.83.21,35.21-61.86h-139.27s-63.34-3.76-67.37,75.03c-1.43,27.92,10.87,45.06,22.72,55.03,11.87,9.98,25.46,11.75,39.26,11.75h67.17c5.11,0,9.22,4.21,9.13,9.35-.09,5-4.14,9.02-9.12,9.02l-121.63.18-30.51,57.81h172.26c58.76-2.79,54.28-69.57,54.28-69.57-1.01-32.7-14.58-49.85-27.9-58.83"/><path fill="#fff" d="M171.59,200.94c-16.75.02-21.93,4.2-36.37,11.88,3.22-3.93,6.43-7.87,9.61-11.82,4.62-5.73,9.21-11.5,13.73-17.3,24.28-31.17,48.2-62.77,29.4-104.42-15.87-35.15-60.77-48.94-94.26-30.64v30.9c-28.26.58-52.08,24.53-52.08,52.93v21.11h52.08v-35.2c0-17.05,21.08-25.71,32.58-13.12,3.45,3.77,5.48,9,4.88,15.34-.92,9.7-11.27,19.96-17.18,27.61-27.9,36.12-90.45,111.08-90.45,111.08h147.74l33.15-58.36h-32.84Z"/></svg></div>
+  <div class="logo">2S Consig</div>
+  <div class="sub">Painel de Gestão · Acesso restrito</div>
+  <div class="err" id="err"></div>
+  <input id="email" type="email" placeholder="seu e-mail" autocomplete="username">
+  <input id="senha" type="password" placeholder="senha" autocomplete="current-password">
+  <button id="entrar" onclick="entrar()">Entrar</button>
+</div>
+<script>
+const SUPA_URL='https://uhjnfdyfyealtmbldjso.supabase.co';
+const SUPA_KEY='sb_publishable_lQqWj9oquj5wsmI67NJDXA_1v3MKUNc';
+
+function hdr(t){return {apikey:SUPA_KEY, Authorization:'Bearer '+(t||SUPA_KEY), 'Content-Type':'application/json'};}
+function erro(m){const e=document.getElementById('err');e.textContent=m;e.style.display='block';}
+
+async function carregarPainel(tok){
+  document.getElementById('card').innerHTML='<div class="carregando">Carregando painel...</div>';
+  const s=JSON.parse(localStorage.getItem('s2_sess')||'{}');
+  let ehAdmin=false;
+  try{
+    const pr=await fetch(SUPA_URL+'/rest/v1/perfis?select=role&login=eq.'+encodeURIComponent(s.e||''),{headers:hdr(tok)});
+    const pj=await pr.json(); ehAdmin=(pj[0]||{}).role==='admin';
+  }catch(_){}
+  const r=await fetch(SUPA_URL+'/rest/v1/painel_cache?select=html,atualizado_em&escopo=eq.painel',{headers:hdr(tok)});
+  if(!r.ok){localStorage.removeItem('s2_sess');location.reload();return;}
+  const rows=await r.json();
+  if(!rows.length){document.getElementById('card').innerHTML='<div class="carregando">Painel ainda não publicado — aguarde a próxima atualização.</div>';return;}
+  sessionStorage.setItem('2s_auth','1'); // pula o login interno do painel
+  let html=rows[0].html;
+  const itemCss='padding:10px 16px;cursor:pointer;font-size:13px;color:#8b949e;display:flex;align-items:center;gap:5px;text-decoration:none;white-space:nowrap';
+  let menu='<div style="margin-left:auto;display:flex;align-items:center">';
+  if(ehAdmin)menu+='<a href="usuarios.html" style="'+itemCss+'">⚙️ Usuários</a>';
+  menu+='<span onclick="localStorage.removeItem(\'s2_sess\');sessionStorage.removeItem(\'2s_auth\');location.reload()" style="'+itemCss+'">⏻ Sair</span></div>';
+  html=html.replace('🔄 Esteira & Conversão</div>', '🔄 Esteira & Conversão</div>'+menu);
+  // Auto-refresh: a cada 5min verifica se há painel novo publicado e recarrega
+  const ts=rows[0].atualizado_em||'';
+  const poll='<scr'+'ipt>(function(){var TS='+JSON.stringify(ts)+';setInterval(async function(){'
+    +'try{var s=JSON.parse(localStorage.getItem("s2_sess")||"{}");'
+    +'if(!s.t||Date.now()>(s.exp||0)-60000)return;'
+    +'var r=await fetch("'+SUPA_URL+'/rest/v1/painel_cache?select=atualizado_em&escopo=eq.painel",'
+    +'{headers:{apikey:"'+SUPA_KEY+'",Authorization:"Bearer "+s.t}});'
+    +'if(!r.ok)return;var j=await r.json();'
+    +'if(j[0]&&j[0].atualizado_em!==TS)location.reload();'
+    +'}catch(e){}},300000);})();</scr'+'ipt>';
+  html=html.replace('</body>', poll+'</body>');
+  document.open();document.write(html);document.close();
+}
+
+async function entrar(){
+  const email=document.getElementById('email').value.trim().toLowerCase();
+  const senha=document.getElementById('senha').value;
+  const btn=document.getElementById('entrar');
+  btn.disabled=true;btn.textContent='Verificando...';
+  try{
+    const r=await fetch(SUPA_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:hdr(),body:JSON.stringify({email,password:senha})});
+    const j=await r.json();
+    if(!r.ok||!j.access_token){erro('Usuário ou senha incorretos');btn.disabled=false;btn.textContent='Entrar';return;}
+    localStorage.setItem('s2_sess',JSON.stringify({t:j.access_token,e:email,exp:Date.now()+(j.expires_in||3600)*1000}));
+    carregarPainel(j.access_token);
+  }catch(ex){erro('Erro de conexão: '+ex.message);btn.disabled=false;btn.textContent='Entrar';}
+}
+
+['email','senha'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')entrar();}));
+
+// Sessão existente ainda válida? entra direto
+try{
+  const s=JSON.parse(localStorage.getItem('s2_sess'));
+  if(s&&s.t&&Date.now()<(s.exp||0)-60000)carregarPainel(s.t);
+}catch(_){}
+</script>
+</body>
+</html>

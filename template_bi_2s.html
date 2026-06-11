@@ -1,0 +1,1755 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2S Consig — Painel de Gestão</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  /* ── LOGIN ── */
+  #login-overlay{position:fixed;inset:0;background:#0d1117;z-index:9999;display:flex;align-items:center;justify-content:center;}
+  #login-overlay.hidden{display:none;}
+  .login-box{background:#161b22;border:1px solid #30363d;border-radius:14px;padding:40px 44px;width:340px;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+  .login-logo{display:flex;align-items:center;gap:11px;margin-bottom:28px;}
+  .login-logo-svg{height:44px;width:auto;display:block;flex-shrink:0;}
+  .login-logo h2{font-size:17px;font-weight:700;color:#e6edf3;line-height:1.2;}
+  .login-logo p{font-size:11px;color:#7d8590;margin-top:2px;}
+  .login-field{margin-bottom:14px;}
+  .login-field label{display:block;font-size:11px;font-weight:700;color:#7d8590;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+  .login-field input{width:100%;background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:10px 13px;color:#e6edf3;font-size:14px;outline:none;transition:border .2s;}
+  .login-field input:focus{border-color:#388bfd;}
+  .login-btn{width:100%;background:linear-gradient(135deg,#1f6feb,#388bfd);border:none;border-radius:8px;padding:11px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px;transition:opacity .2s;}
+  .login-btn:hover{opacity:.88;}
+  .login-err{color:#f85149;font-size:12px;margin-top:10px;text-align:center;min-height:18px;}
+
+  :root{
+    --bg:#0d1117;--card:#161b22;--border:#30363d;
+    --accent:#1f6feb;--accent2:#388bfd;
+    --green:#3fb950;--yellow:#d29922;--red:#f85149;
+    --purple:#8957e5;--cyan:#39d0d8;
+    --text:#e6edf3;--muted:#7d8590;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;min-height:100vh;}
+
+  .header{background:linear-gradient(135deg,#0d1117,#161b22);border-bottom:1px solid var(--border);padding:14px 26px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .logo{display:flex;align-items:center;gap:11px;}
+  .logo-svg{height:38px;width:auto;display:block;}
+  .logo h1{font-size:20px;font-weight:700;}
+  .logo p{color:var(--muted);font-size:13px;margin-top:2px;}
+  .hdr-r{display:none;}
+  .dot{width:7px;height:7px;background:var(--green);border-radius:50%;display:inline-block;animation:blink 1.5s infinite;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+  .badge{background:rgba(31,111,235,.15);border:1px solid rgba(31,111,235,.3);color:var(--accent2);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px;}
+  .hdr-info{color:var(--muted);font-size:12px;}
+  .legend-pill{display:flex;align-items:center;gap:12px;font-size:11px;}
+  .legend-pill span{display:flex;align-items:center;gap:4px;}
+  .pill{display:inline-block;width:8px;height:8px;border-radius:2px;}
+
+  .tabs{background:var(--card);border-bottom:1px solid var(--border);padding:0 26px;display:flex;}
+  .tab{padding:12px 20px;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);font-size:14px;font-weight:600;transition:all .2s;white-space:nowrap;}
+  .tab.active{border-bottom-color:var(--accent2);color:var(--text);}
+  .tab:hover:not(.active){color:var(--text);}
+
+  .main{padding:20px 26px;}
+  .pg{display:none;}  .pg.active{display:block;}
+
+  .krow{display:grid;gap:11px;margin-bottom:16px;}
+  .k5{grid-template-columns:repeat(5,1fr);}
+  .k4{grid-template-columns:repeat(4,1fr);}
+  .k3{grid-template-columns:repeat(3,1fr);}
+  .kpi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:15px 17px;transition:transform .15s;}
+  .kpi:hover{transform:translateY(-2px);}
+  .kpi-lbl{color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.55px;margin-bottom:7px;}
+  .kpi-val{font-size:24px;font-weight:800;letter-spacing:-.5px;}
+  .kpi-sub{color:var(--muted);font-size:11px;margin-top:4px;}
+  .kpi-sub2{color:var(--muted);font-size:11px;margin-top:2px;}
+  .chip{display:inline-block;padding:3px 9px;border-radius:8px;font-size:10px;font-weight:700;margin-top:5px;}
+  .cg{background:rgba(63,185,80,.15);color:var(--green);}
+  .cy{background:rgba(210,153,34,.15);color:var(--yellow);}
+  .cb{background:rgba(56,139,253,.15);color:var(--accent2);}
+
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px;}
+  .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;margin-bottom:13px;}
+  .g31{display:grid;grid-template-columns:2fr 1fr;gap:13px;margin-bottom:13px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:15px 17px;}
+  .ct{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+  .ct .sub{color:var(--muted);font-size:11px;font-weight:400;}
+  .ct .tag{background:rgba(63,185,80,.12);color:var(--green);font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;}
+  .ct .tag-b{background:rgba(56,139,253,.12);color:var(--accent2);font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;}
+  canvas{max-height:200px;}  canvas.tall{max-height:250px;}
+
+  table{width:100%;border-collapse:collapse;}
+  th{color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.45px;padding:0 6px 8px;text-align:left;border-bottom:1px solid var(--border);}
+  td{padding:8px 6px;border-bottom:1px solid rgba(48,54,61,.5);font-size:12.5px;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:rgba(255,255,255,.02);}
+  .rank{color:var(--muted);font-size:11px;}
+  .bw{background:rgba(255,255,255,.06);border-radius:3px;height:4px;margin-top:3px;}
+  .bf{height:4px;border-radius:3px;}
+  .tr-total td{font-weight:700;background:rgba(56,139,253,.07)!important;border-top:1px solid rgba(56,139,253,.2);}
+  .td-bruto{color:var(--accent2);font-weight:700;}
+  .td-liq{color:var(--muted);font-size:11.5px;}
+
+  .fi{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+  .fl{width:160px;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
+  .fbw{flex:1;background:rgba(255,255,255,.06);border-radius:3px;height:20px;}
+  .fb{height:20px;border-radius:3px;display:flex;align-items:center;padding-left:7px;font-size:10.5px;font-weight:700;color:rgba(255,255,255,.9);min-width:30px;}
+  .fc{width:52px;text-align:right;font-size:11.5px;font-weight:700;flex-shrink:0;}
+
+  .b{display:inline-block;padding:2px 8px;border-radius:7px;font-size:10.5px;font-weight:700;}
+  .bb{background:rgba(56,139,253,.15);color:var(--accent2);}
+  .bp{background:rgba(137,87,229,.15);color:var(--purple);}
+  .bc{background:rgba(57,208,216,.15);color:var(--cyan);}
+  .by{background:rgba(210,153,34,.15);color:var(--yellow);}
+  .bg2{background:rgba(63,185,80,.15);color:var(--green);}
+  .br{background:rgba(248,81,73,.15);color:var(--red);}
+
+  .stabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:13px;}
+  .stab{padding:9px 16px;cursor:pointer;font-size:13px;color:var(--muted);border-bottom:2px solid transparent;font-weight:600;transition:all .15s;white-space:nowrap;}
+  .stab.active{color:var(--text);border-bottom-color:var(--accent2);}
+  .spg{display:none;}  .spg.active{display:block;}
+
+  .prog-wrap{background:rgba(255,255,255,.07);border-radius:6px;height:8px;overflow:hidden;}
+  .prog-fill{height:8px;border-radius:6px;}
+
+  .mes-box{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:18px 20px;margin-bottom:14px;}
+  .proj-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:15px;}
+  .proj-item{background:rgba(255,255,255,.03);border-radius:8px;padding:13px 15px;border:1px solid rgba(255,255,255,.06);}
+  .proj-lbl{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.55px;font-weight:700;margin-bottom:7px;}
+  .proj-val{font-size:22px;font-weight:800;letter-spacing:-.3px;}
+  .proj-sub{font-size:11.5px;color:var(--muted);margin-top:3px;}
+  .proj-sub2{font-size:11px;color:var(--muted);margin-top:2px;}
+
+  .hoje-box{background:rgba(63,185,80,.05);border:1px solid rgba(63,185,80,.18);border-radius:11px;padding:17px 20px;margin-bottom:14px;}
+  .hoje-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .hoje-title{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:800;}
+  .hoje-kpis{display:flex;gap:28px;}
+  .hk{text-align:right;}
+  .hk-lbl{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.6px;font-weight:600;}
+  .hk-val{font-size:22px;font-weight:800;line-height:1.1;margin-top:2px;}
+
+  .mini-sec{background:rgba(0,0,0,.2);border-radius:8px;padding:13px 15px;}
+  .mini-title{font-size:12px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;}
+  /* tabelas dentro da secao Pagamentos do Dia ficam com fonte maior */
+  .mini-sec table th{font-size:11px;padding:0 6px 9px;}
+  .mini-sec table td{font-size:12.5px;padding:8px 6px;}
+  .mini-sec table td.td-bruto{font-size:13px;}
+  .mini-sec table td.td-liq{font-size:11.5px;}
+  .mini-sec .b{font-size:10.5px;padding:2px 8px;}
+
+  /* FILTER BUTTONS */
+  .f-btn-group{display:flex;gap:4px;flex-wrap:wrap;}
+  .f-btn{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--muted);padding:4px 11px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;}
+  .f-btn:hover{border-color:var(--accent2);color:var(--text);}
+  .f-btn.active{background:rgba(56,139,253,.2);border-color:var(--accent2);color:var(--accent2);font-weight:600;}
+  .f-btn.f-green.active{background:rgba(63,185,80,.15);border-color:var(--green);color:var(--green);}
+  .f-btn.f-red.active{background:rgba(248,81,73,.15);border-color:var(--red);color:var(--red);}
+  .f-btn.f-blue.active{background:rgba(57,208,216,.15);border-color:var(--cyan);color:var(--cyan);}
+  .f-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(56,139,253,.15);border:1px solid rgba(56,139,253,.3);color:var(--accent2);padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;}
+
+  .prod-mini{display:flex;gap:8px;}  .pm{flex:1;border-radius:8px;padding:10px 11px;border:1px solid var(--border);}
+  .pm.fgts{background:rgba(31,111,235,.08);border-color:rgba(31,111,235,.2);}
+  .pm.ec{background:rgba(137,87,229,.08);border-color:rgba(137,87,229,.2);}
+  .pm-name{font-size:12px;font-weight:800;margin-bottom:8px;letter-spacing:.4px;}
+  .pm-row{display:flex;justify-content:space-between;margin-bottom:4px;}
+  .pm-lbl{color:var(--muted);font-size:11.5px;}
+  .pm-val{font-size:13px;font-weight:700;}
+
+  /* Destaque visão 2S */
+  .visao-2s{background:rgba(56,139,253,.06);border:1px solid rgba(56,139,253,.2);border-radius:7px;padding:4px 10px;font-size:10.5px;font-weight:700;color:var(--accent2);letter-spacing:.35px;}
+  .visao-parc{background:rgba(137,87,229,.06);border:1px solid rgba(137,87,229,.2);border-radius:7px;padding:4px 10px;font-size:10.5px;font-weight:700;color:var(--purple);letter-spacing:.35px;}
+
+</style>
+</head>
+<body>
+
+
+<!-- TELA DE LOGIN -->
+<div id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">
+      <svg class="login-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450.56 364.43"><path fill="#fff" d="M384.2,130.35c-9.68-6.52-21.17-9.78-32.82-9.78h-72.09c-4.85,0-8.77-3.99-8.71-8.87.06-5.26,4.32-9.48,9.55-9.47l99.83.21,35.21-61.86h-139.27s-63.34-3.76-67.37,75.03c-1.43,27.92,10.87,45.06,22.72,55.03,11.87,9.98,25.46,11.75,39.26,11.75h67.17c5.11,0,9.22,4.21,9.13,9.35-.09,5-4.14,9.02-9.12,9.02l-121.63.18-30.51,57.81h172.26c58.76-2.79,54.28-69.57,54.28-69.57-1.01-32.7-14.58-49.85-27.9-58.83"/><path fill="#fff" d="M171.59,200.94c-16.75.02-21.93,4.2-36.37,11.88,3.22-3.93,6.43-7.87,9.61-11.82,4.62-5.73,9.21-11.5,13.73-17.3,24.28-31.17,48.2-62.77,29.4-104.42-15.87-35.15-60.77-48.94-94.26-30.64v30.9c-28.26.58-52.08,24.53-52.08,52.93v21.11h52.08v-35.2c0-17.05,21.08-25.71,32.58-13.12,3.45,3.77,5.48,9,4.88,15.34-.92,9.7-11.27,19.96-17.18,27.61-27.9,36.12-90.45,111.08-90.45,111.08h147.74l33.15-58.36h-32.84Z"/></svg>
+      <div>
+        <h2>2S Consig</h2>
+        <p>Painel de Gestão · Acesso restrito</p>
+      </div>
+    </div>
+    <div class="login-field">
+      <label>Usuário</label>
+      <input type="text" id="login_user" placeholder="Digite seu usuário" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label>Senha</label>
+      <input type="password" id="login_pass" placeholder="Digite sua senha" autocomplete="current-password">
+    </div>
+    <button class="login-btn" onclick="tentarLogin()">Entrar</button>
+    <div class="login-err" id="login_err"></div>
+  </div>
+</div>
+
+<div class="header">
+  <div class="logo">
+    <svg class="logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450.56 364.43"><path fill="#fff" d="M384.2,130.35c-9.68-6.52-21.17-9.78-32.82-9.78h-72.09c-4.85,0-8.77-3.99-8.71-8.87.06-5.26,4.32-9.48,9.55-9.47l99.83.21,35.21-61.86h-139.27s-63.34-3.76-67.37,75.03c-1.43,27.92,10.87,45.06,22.72,55.03,11.87,9.98,25.46,11.75,39.26,11.75h67.17c5.11,0,9.22,4.21,9.13,9.35-.09,5-4.14,9.02-9.12,9.02l-121.63.18-30.51,57.81h172.26c58.76-2.79,54.28-69.57,54.28-69.57-1.01-32.7-14.58-49.85-27.9-58.83"/><path fill="#fff" d="M171.59,200.94c-16.75.02-21.93,4.2-36.37,11.88,3.22-3.93,6.43-7.87,9.61-11.82,4.62-5.73,9.21-11.5,13.73-17.3,24.28-31.17,48.2-62.77,29.4-104.42-15.87-35.15-60.77-48.94-94.26-30.64v30.9c-28.26.58-52.08,24.53-52.08,52.93v21.11h52.08v-35.2c0-17.05,21.08-25.71,32.58-13.12,3.45,3.77,5.48,9,4.88,15.34-.92,9.7-11.27,19.96-17.18,27.61-27.9,36.12-90.45,111.08-90.45,111.08h147.74l33.15-58.36h-32.84Z"/></svg>
+    <div>
+      <h1>2S Consig · Painel de Gestão</h1>
+      <p id="hdr_periodo">—</p>
+      <p style="color:var(--muted);font-size:13px;margin-top:3px;opacity:.95">⟳ Atualizado em: <span id="hdr_atualizado" style="color:var(--text);font-weight:600">--</span></p>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <div class="legend-pill">
+      <span><span class="pill" style="background:var(--accent2)"></span> Prod. Bruta = visão 2S</span>
+      <span><span class="pill" style="background:var(--purple)"></span> Prod. Líquida = visão parceiro</span>
+    </div>
+    <span class="badge"><span class="dot"></span> <span id="hdr_total_reg">2.070</span> registros</span>
+  </div>
+</div>
+
+<div class="tabs" id="mainTabs">
+  <div class="tab active" data-page="p1">📊 Visão Geral</div>
+  <div class="tab" data-page="p2">📅 Mensal & Pagamentos do Dia</div>
+  <div class="tab" data-page="p3">🤝 Parceiros & Hierarquia</div>
+  <div class="tab" data-page="p4">🔄 Esteira & Conversão</div>
+</div>
+
+<div class="main">
+
+<!-- ===== P1: VISÃO GERAL ===== -->
+<div id="p1" class="pg active">
+  <div class="krow k4">
+    <div class="kpi">
+      <div class="kpi-lbl">Contratos Desembolsados</div>
+      <div class="kpi-val" id="kp1_des" style="color:var(--accent2)">1.713</div>
+      <div class="kpi-sub">de <span id="kp1_des_total">2.070</span> digitados</div>
+      <span class="chip cg" id="kp1_conv">82.8% conversão</span>
+    </div>
+    <div class="kpi" style="border-color:rgba(56,139,253,.3)">
+      <div class="kpi-lbl">Prod. Bruta Total <span class="visao-2s">2S</span></div>
+      <div class="kpi-val" id="kp1_bruto" style="color:var(--accent2)">R$ 40,08M</div>
+      <div class="kpi-sub">produção bruta acumulada</div>
+      <div class="kpi-sub2">Ticket bruto médio: <span id="kp1_tkb">R$ 730</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Prod. Líquida Total <span class="visao-parc">Parceiro</span></div>
+      <div class="kpi-val" id="kp1_liq" style="color:var(--purple)">R$ 31,05M</div>
+      <div class="kpi-sub">valor ao cliente</div>
+      <div class="kpi-sub2">Ticket líquido médio: <span id="kp1_tkl">R$ 565</span></div>
+    </div>
+    <div class="kpi" style="border-color:rgba(210,153,34,.3)">
+      <div class="kpi-lbl"><span id="kp1_proj_lbl">Mai/26</span> — Projeção <span class="visao-2s">2S</span></div>
+      <div class="kpi-val" id="kp1_proj" style="color:var(--yellow)">R$ 1.12M ↗</div>
+      <div class="kpi-sub"><span id="kp1_proj_du">10 de 22 dias úteis · 45.5%</span></div>
+      <span class="chip cy" id="kp1_proj_real">R$ 507K realizado</span>
+    </div>
+  </div>
+
+  <!-- Barra de filtros P1 -->
+  <div id="p1_bar" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 0 6px;border-bottom:1px solid var(--border);margin-bottom:6px">
+    <span style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.5px">PRODUTO</span>
+    <div id="p1f_prod" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+    <span style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.5px;margin-left:8px">FUNDO</span>
+    <div id="p1f_fundo" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+    <button id="p1f_limpar" onclick="p1ClearFilters()" style="display:none;margin-left:auto;background:rgba(248,81,73,.12);border:1px solid rgba(248,81,73,.25);color:var(--red);padding:3px 10px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer">✕ Limpar</button>
+  </div>
+
+  <!-- Mensal full-width -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">Produção Bruta Mensal — Visão 2S <span id="p1_lbl_mensal" class="tag-b">BRUTA</span></div>
+    <canvas id="c1_mensal" class="tall"></canvas>
+  </div>
+
+  <!-- Por Produto + Por Fundo lado a lado -->
+  <div class="g2" style="margin-bottom:12px">
+    <div class="card">
+      <div class="ct">Por Produto <span class="sub">bruta vs líquida</span></div>
+      <canvas id="c1_prod" style="max-height:105px;margin-bottom:12px"></canvas>
+      <div class="prod-mini" id="p1_prodmini" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"></div>
+    </div>
+    <div class="card">
+      <div class="ct">Por Fundo <span class="tag-b">BRUTA</span></div>
+      <canvas id="c1_fundo" style="max-height:220px"></canvas>
+    </div>
+  </div>
+
+  <!-- Tabela histórica mensal (movida do P2) -->
+  <div class="card">
+    <div class="ct">Histórico Mensal <span class="sub">desembolsados · <span style="color:var(--accent2)">bruta = visão 2S</span> · <span style="color:var(--purple)">líquida = visão parceiro</span></span></div>
+    <table>
+      <thead><tr><th>Mês</th><th>Contratos</th><th style="color:var(--accent2)">Prod. Bruta 2S</th><th style="color:var(--purple)">Prod. Líquida</th><th style="color:var(--accent2)">Ticket Bruto</th><th>Ticket Líq.</th><th>% Bruta</th></tr></thead>
+      <tbody id="tb_g"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== P2: MENSAL & PAGAMENTOS ===== -->
+<div id="p2" class="pg">
+
+  <div class="hoje-box" id="hoje-box">
+    <div class="hoje-top">
+      <div class="hoje-title"><span class="dot"></span> <span id="hoje_titulo">Pagamentos do Dia</span></div>
+      <div class="hoje-kpis">
+        <div class="hk"><div class="hk-lbl">Contratos</div><div class="hk-val" id="hoje_c_val" style="color:var(--green)">--</div></div>
+        <div class="hk"><div class="hk-lbl">Bruta 2S</div><div class="hk-val" id="hoje_b_val" style="color:var(--accent2)">--</div></div>
+        <div class="hk"><div class="hk-lbl">Liquida</div><div class="hk-val" id="hoje_l_val" style="color:var(--purple)">--</div></div>
+        <div class="hk"><div class="hk-lbl">Ticket Medio</div><div class="hk-val" id="hoje_tk_val" style="color:var(--yellow)">--</div></div>
+      </div>
+    </div>
+    <div class="g3" style="margin-bottom:0">
+      <div class="mini-sec">
+        <div class="mini-title">Por Produto</div>
+        <div id="hoje_prod_container" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+      </div>
+      <div class="mini-sec">
+        <div class="mini-title">Por Fundo</div>
+        <table><thead><tr><th>Fundo</th><th>Contr.</th><th style="color:var(--accent2)">Bruta</th><th style="color:var(--purple)">Liquida</th></tr></thead><tbody id="hoje_fundo_tbody"></tbody></table>
+        <canvas id="hoje_fundo_chart" style="max-height:150px;margin-top:14px"></canvas>
+      </div>
+      <div class="mini-sec">
+        <div class="mini-title">Parceiros do Dia</div>
+        <table><thead><tr><th>#</th><th>Parceiro</th><th>Contr.</th><th style="color:var(--accent2)">Bruta</th><th style="color:var(--purple)">Liquida</th></tr></thead><tbody id="hoje_parc_tbody"></tbody></table>
+        <div style="margin-top:10px;padding:8px 10px;background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.2);border-radius:7px;font-size:10px;color:var(--yellow)">Base sendo atualizada ao longo do dia.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagamentos dia a dia do mês atual -->
+  <div class="card" id="card_dia_dia" style="margin-bottom:13px">
+    <div class="ct">
+      Pagamentos dia a dia — <span id="diad_mes_lbl" style="color:var(--accent2)">Mês Atual</span>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);font-weight:400"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(56,139,253,.7)"></span>Bruta</span>
+        <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);font-weight:400"><span style="display:inline-block;width:10px;height:3px;border-radius:2px;background:var(--green)"></span>Contratos</span>
+      </div>
+    </div>
+    <canvas id="c_dia_dia" style="max-height:200px"></canvas>
+  </div>
+
+  <div class="mes-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div>
+        <div style="font-size:17px;font-weight:800"><span id="mes_titulo_lbl">Maio/2026</span> &mdash; Resumo do M&ecirc;s &nbsp;<span class="visao-2s">vis&atilde;o 2S &middot; Prod. Bruta</span></div>
+        <div style="color:var(--muted);font-size:12.5px;margin-top:5px;font-weight:500"><span id="mes_du_info">-- dias &uacute;teis conclu&iacute;dos de --</span></div>
+      </div>
+      <span class="chip cy" id="mes_pct_chip" style="font-size:11px;padding:4px 12px">-- conclu&iacute;do</span>
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px"><span id="mes_d1_lbl">01/Mai</span><span>&#9660; Hoje</span><span id="mes_d31_lbl">31/Mai</span></div>
+      <div class="prog-wrap"><div class="prog-fill" id="mes_prog_fill" style="width:33%;background:linear-gradient(90deg,var(--accent2),var(--green))"></div></div>
+    </div>
+    <div class="proj-grid">
+      <div class="proj-item" style="border-color:rgba(56,139,253,.25)">
+        <div class="proj-lbl">Contratos Realizados</div>
+        <div class="proj-val" id="mes_contr_real" style="color:var(--accent2)">--</div>
+        <div class="proj-sub" id="mes_contr_dia">-- contratos / dia &uacute;til</div>
+      </div>
+      <div class="proj-item" style="border-color:rgba(63,185,80,.25)">
+        <div class="proj-lbl">Prod. Bruta Realizada <span class="visao-2s">2S</span></div>
+        <div class="proj-val" id="mes_bruto_real" style="color:var(--accent2)">--</div>
+        <div class="proj-sub" id="mes_bruto_dia">-- / dia &uacute;til</div>
+        <div class="proj-sub2" id="mes_liq_real" style="color:var(--purple)">L&iacute;quida: --</div>
+      </div>
+      <div class="proj-item" style="border-color:rgba(210,153,34,.25)">
+        <div class="proj-lbl">Contratos Projetados &rsaquo; Fim M&ecirc;s</div>
+        <div class="proj-val" id="mes_contr_proj" style="color:var(--yellow)">-- &#8599;</div>
+        <div class="proj-sub">21 dias &uacute;teis seg&ndash;sex</div>
+      </div>
+      <div class="proj-item" style="border-color:rgba(210,153,34,.25)">
+        <div class="proj-lbl">Prod. Bruta Projetada <span class="visao-2s">2S</span></div>
+        <div class="proj-val" id="mes_bruto_proj" style="color:var(--yellow)">-- &#8599;</div>
+        <div class="proj-sub">21 dias &uacute;teis seg&ndash;sex</div>
+        <div class="proj-sub2" id="mes_liq_proj" style="color:var(--purple)">L&iacute;quida proj.: --</div>
+      </div>
+    </div>
+    <div class="g3" style="margin-bottom:0">
+      <div class="mini-sec">
+        <div class="mini-title">Por Produto &mdash; M&ecirc;s Atual <span class="visao-2s">Bruta = 2S</span></div>
+        <div id="mes_prod_container" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"></div>
+        <canvas id="c2_mes_prod_mini" style="max-height:90px"></canvas>
+      </div>
+      <div class="mini-sec">
+        <div class="mini-title">Por Fundo &mdash; M&ecirc;s Atual <span class="visao-2s">Bruta = 2S</span></div>
+        <canvas id="c2_mes_fundo_mini" style="max-height:90px;margin-bottom:10px"></canvas>
+        <table><thead><tr><th>Fundo</th><th>Contr.</th><th style="color:var(--accent2)">Bruta</th><th style="color:var(--purple)">L&iacute;quida</th><th>%</th></tr></thead><tbody id="mes_fundo_tbody"></tbody></table>
+      </div>
+      <div class="mini-sec"><div class="mini-title">Comparativo M&ecirc;s vs M&ecirc;s Anterior</div>
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:12px">
+          <span id="mes_var_pct" style="font-size:28px;font-weight:800;color:var(--yellow);line-height:1">&mdash;</span>
+          <span style="font-size:11.5px;color:var(--muted);font-weight:500">proje&ccedil;&atilde;o vs m&ecirc;s anterior</span>
+        </div>
+        <canvas id="c2_comp" style="max-height:130px"></canvas>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11.5px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+          <div>
+            <div style="color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:3px">M&ecirc;s Anterior</div>
+            <div style="font-weight:700;font-size:13px" id="mes_ant_val">&mdash;</div>
+            <div style="color:var(--muted);font-size:11px" id="mes_ant_contr">&mdash;</div>
+          </div>
+          <div>
+            <div style="color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:3px">Proje&ccedil;&atilde;o Atual</div>
+            <div style="font-weight:700;font-size:13px;color:var(--yellow)" id="mes_proj_resumo">&mdash;</div>
+            <div style="color:var(--muted);font-size:11px" id="mes_proj_contr">&mdash;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ANÁLISE DE TABELAS — Mês Atual ===== -->
+  <div class="card" id="card_tabelas" style="margin-bottom:14px">
+    <div class="ct">
+      <div>
+        An&aacute;lise de Tabelas
+        <span id="tab_mes_lbl" style="color:var(--accent2);font-size:12px;font-weight:400;margin-left:6px">M&ecirc;s Atual</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:10px;color:var(--muted);font-weight:600">PRODUTO</span>
+        <div class="f-btn-group" id="tab_f_prod">
+          <button class="f-btn active" data-tabf="todos">Todos</button>
+        </div>
+      </div>
+    </div>
+    <div id="tab_resumo" style="display:flex;gap:18px;padding:8px 2px 12px;border-bottom:1px solid var(--border);margin-bottom:8px;flex-wrap:wrap"></div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Tabela</th>
+          <th>Digitados</th>
+          <th style="color:var(--green)">Desembolsados</th>
+          <th style="color:var(--accent2)">Prod. Bruta</th>
+          <th style="color:var(--purple)">Prod. L&iacute;quida</th>
+          <th style="color:var(--yellow)">Ticket M&eacute;dio</th>
+          <th>Share</th>
+        </tr>
+      </thead>
+      <tbody id="tab_tbody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ===== P3: PARCEIROS ===== -->
+<div id="p3" class="pg">
+
+  <!-- FILTROS P3 -->
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px 16px;margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div style="font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap">🔽 Filtros:</div>
+
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--muted);font-weight:600">PRODUTO</span>
+        <div class="f-btn-group" id="p3_f_prod">
+          <button class="f-btn active" data-p3group="prod" data-p3val="todos">Todos</button>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--muted);font-weight:600">MÊS</span>
+        <div class="f-btn-group" id="p3_f_mes">
+          <button class="f-btn active" data-p3group="mes" data-p3val="todos">Todos</button>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--muted);font-weight:600">SUPERINTENDENTE</span>
+        <div class="f-btn-group" id="p3_f_sup">
+          <button class="f-btn active" data-p3group="sup" data-p3val="todos">Todos</button>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--muted);font-weight:600">REGIONAL</span>
+        <div class="f-btn-group" id="p3_f_reg">
+          <button class="f-btn active" data-p3group="reg" data-p3val="todos">Todos</button>
+        </div>
+      </div>
+
+      <button id="p3_reset" style="margin-left:auto;background:rgba(248,81,73,.12);border:1px solid rgba(248,81,73,.25);color:var(--red);padding:4px 12px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer">✕ Limpar</button>
+    </div>
+    <div id="p3_chips" style="display:none;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap"></div>
+  </div>
+
+  <!-- KPIs dinâmicos -->
+  <div class="krow k4" id="p3_kpis">
+    <div class="kpi" style="border-color:rgba(56,139,253,.3)">
+      <div class="kpi-lbl">Contratos</div>
+      <div class="kpi-val" id="p3k_contr" style="color:var(--accent2)">54.755</div>
+      <div class="kpi-sub" id="p3k_contr_sub">acumulado filtrado</div>
+    </div>
+    <div class="kpi" style="border-color:rgba(56,139,253,.3)">
+      <div class="kpi-lbl">Prod. Bruta <span class="visao-2s">2S</span></div>
+      <div class="kpi-val" id="p3k_bruta" style="color:var(--accent2)">R$ 39,97M</div>
+      <div class="kpi-sub" id="p3k_bruta_sub">ticket bruto médio</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Prod. Líquida <span class="visao-parc">Parceiro</span></div>
+      <div class="kpi-val" id="p3k_liq" style="color:var(--purple)">R$ 30,97M</div>
+      <div class="kpi-sub" id="p3k_liq_sub">ticket líquido médio</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Parceiros Ativos</div>
+      <div class="kpi-val" id="p3k_parc" style="color:var(--cyan)">500+</div>
+      <div class="kpi-sub" id="p3k_parc_sub">no período filtrado</div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Prod. Bruta por Superintendente <span class="tag-b" id="p3_lbl_sup">2S</span></div>
+      <canvas id="c3_sp" class="tall"></canvas>
+    </div>
+    <div class="card">
+      <div class="ct">Bruta vs Líquida por Superintendente <span id="p3_lbl_bvl" class="sub"></span></div>
+      <canvas id="c3_bvl" class="tall"></canvas>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Top Regionais <span class="tag-b" id="p3_lbl_reg">Bruta 2S</span></div>
+      <canvas id="c3_reg" class="tall"></canvas>
+    </div>
+    <div class="card">
+      <div class="ct">Top Comerciais <span class="tag-b" id="p3_lbl_com">Bruta 2S</span></div>
+      <canvas id="c3_com" class="tall"></canvas>
+    </div>
+  </div>
+
+  <div class="g31">
+    <div class="card" style="grid-column:1/-1">
+      <div class="ct">Ranking de Parceiros <span class="sub"><span style="color:var(--accent2)">ordenado por bruta · 2S</span></span></div>
+      <table>
+        <thead><tr><th>#</th><th>Parceiro</th><th style="color:var(--muted);font-size:10px">Hierarquia</th><th>Contr.</th><th style="color:var(--accent2)">Prod. Bruta</th><th style="color:var(--purple)">Prod. Líquida</th><th>Share</th></tr></thead>
+        <tbody id="c3_parc"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P4: ESTEIRA ===== -->
+<div id="p4" class="pg">
+
+  <!-- FILTROS -->
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px 16px;margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <div style="font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap">🔽 Filtros:</div>
+
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--muted);font-weight:600">PERÍODO</span>
+        <div class="f-btn-group" id="f_periodo">
+          <button class="f-btn active" data-group="periodo" data-val="todos">Todos</button>
+          <button class="f-btn" data-group="periodo" data-val="mes">Mês</button>
+          <button class="f-btn" data-group="periodo" data-val="7d">7 dias</button>
+          <button class="f-btn" data-group="periodo" data-val="hoje">Hoje</button>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--muted);font-weight:600">PRODUTO</span>
+        <div class="f-btn-group" id="f_produto">
+          <button class="f-btn active" data-group="produto" data-val="todos">Todos</button>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--muted);font-weight:600">FUNDO</span>
+        <div class="f-btn-group" id="f_fundo">
+          <button class="f-btn active" data-group="fundo" data-val="todos">Todos</button>
+          <button class="f-btn" data-group="fundo" data-val="Anga">Anga</button>
+          <button class="f-btn" data-group="fundo" data-val="LA VIE PFO">LA VIE PFO</button>
+          <button class="f-btn" data-group="fundo" data-val="Nexa NXFS">Nexa NXFS</button>
+          <button class="f-btn" data-group="fundo" data-val="UY3 Asset">UY3 Asset</button>
+          <button class="f-btn" data-group="fundo" data-val="HEAD">HEAD</button>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--muted);font-weight:600">STATUS</span>
+        <div class="f-btn-group" id="f_status">
+          <button class="f-btn active" data-group="status" data-val="todos">Todos</button>
+          <button class="f-btn f-green" data-group="status" data-val="Desembolsado">Desembolsado</button>
+          <button class="f-btn f-red" data-group="status" data-val="Cancelado">Cancelado</button>
+          <button class="f-btn f-blue" data-group="status" data-val="andamento">Em Andamento</button>
+        </div>
+      </div>
+
+      <button id="f_reset" style="margin-left:auto;background:rgba(248,81,73,.12);border:1px solid rgba(248,81,73,.25);color:var(--red);padding:4px 12px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer">✕ Limpar</button>
+    </div>
+
+    <!-- CHIPS de filtros ativos -->
+    <div id="f_chips" style="display:none;margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--border)"></div>
+  </div>
+
+  <!-- KPIs dinâmicos -->
+  <div class="krow k5" id="p4_kpis">
+    <div class="kpi"><div class="kpi-lbl">Total Digitados</div><div class="kpi-val" id="kp4_total" style="color:var(--accent2)">78.513</div><div class="kpi-sub" id="kp4_total_sub">base completa</div></div>
+    <div class="kpi"><div class="kpi-lbl">Desembolsados</div><div class="kpi-val" id="kp4_desemb" style="color:var(--green)">54.926</div><div class="kpi-sub" id="kp4_desemb_sub">70,0% conversão</div></div>
+    <div class="kpi"><div class="kpi-lbl">Cancelados</div><div class="kpi-val" id="kp4_canc" style="color:var(--red)">20.276</div><div class="kpi-sub" id="kp4_canc_sub">25,8% do total</div></div>
+    <div class="kpi"><div class="kpi-lbl">Em Andamento</div><div class="kpi-val" id="kp4_and" style="color:var(--cyan)">3.311</div><div class="kpi-sub" id="kp4_and_sub">ag. assinatura + outros</div></div>
+    <div class="kpi"><div class="kpi-lbl">Prod. Bruta Desemb.</div><div class="kpi-val" id="kp4_bruta" style="color:var(--accent2)">R$ 40,08M</div><div class="kpi-sub" id="kp4_bruta_sub">ticket bruto médio R$ 730</div></div>
+  </div>
+
+  <!-- GRÁFICOS dinâmicos -->
+  <div class="g2">
+    <div class="card"><div class="ct">Distribuição de Status <span id="lbl_status" class="sub"></span></div><canvas id="c4_s" class="tall"></canvas></div>
+    <div class="card"><div class="ct">Funil de Conversão <span id="lbl_funil" class="sub"></span></div><div id="c4_funil" style="padding-top:4px"></div></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="ct">Conversão por Produto <span id="lbl_conv_prod" class="sub"></span></div><canvas id="c4_c" class="tall"></canvas></div>
+    <div class="card"><div class="ct">Conversão por Fundo <span id="lbl_conv_fundo" class="sub"></span></div><canvas id="c4_cf" class="tall"></canvas></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="ct">Conversão Mensal <span id="lbl_conv_mes" class="sub"></span></div><canvas id="c4_cm" class="tall"></canvas></div>
+    <div class="card">
+      <div class="ct">Prod. Bruta vs Líquida por Mês <span class="sub"><span style="color:var(--accent2)">bruta = 2S</span> · <span style="color:var(--purple)">líquida = parceiro</span></span></div>
+      <canvas id="c4_bvl" class="tall"></canvas>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// %%DADOS_INICIO%%
+const D = {
+  meses:    ["Ago/25", "Set/25"],
+  contratos:[930, 783],
+  bruto:    [530601.82, 548605.9],
+  liquido:  [392901.87, 410444.04],
+  ticketB:  [571, 701],
+  ticketL:  [422, 524],
+
+  prodRows: [{"m": "Ago/25", "p": "FGTS", "c": 930, "b": 530601.82, "l": 392901.87}, {"m": "Set/25", "p": "FGTS", "c": 783, "b": 548605.9, "l": 410444.04}],
+  fundoRows:[{"m": "Ago/25", "f": "ANGÁ", "c": 930, "b": 530601.82, "l": 392901.87}, {"m": "Set/25", "f": "ANGÁ", "c": 783, "b": 548605.9, "l": 410444.04}],
+
+  sups: [{"n": "JESSICA COUTINHO DE AZEVEDO", "c": 637, "b": 367716.43, "l": 272577.86}, {"n": "JHONATHAN ROSSI DA CRUZ", "c": 242, "b": 191695.47, "l": 143619.55}, {"n": "JESSICA ESTRATO GONCALVES", "c": 291, "b": 185216.41, "l": 137706.09}, {"n": "DINHO SILVA", "c": 219, "b": 123181.86, "l": 91368.89}, {"n": "CASSIO LEMOS NETO", "c": 188, "b": 102296.92, "l": 76335.53}, {"n": "FELIPE CUNHA DE JESUS", "c": 108, "b": 85958.57, "l": 64282.89}],
+  topParc: [{"n": "52914 - ERIKA RUBIAM DE SOUZA", "c": 68, "b": 99480.73, "l": 75581.44}, {"n": "45931 - THALLES HENRIQUE CUNHA GONÇALVES", "c": 137, "b": 76125.38, "l": 56448.74}, {"n": "9976 - MICHELLA KAREM VARGAS", "c": 180, "b": 74532.31, "l": 53616.04}, {"n": "5172 - MY C CONSIGNADO LTDA", "c": 116, "b": 63132.63, "l": 46385.15}, {"n": "72449 - SCHAID ALMEIDA PIEDADE", "c": 49, "b": 42688.65, "l": 32039.39}, {"n": "32854 - PERSONCRED SOLUÇÕES DE CRÉDITO", "c": 35, "b": 36909.41, "l": 27720.78}, {"n": "80130 - DEBORA MILLY REGIS MONTEIRO", "c": 63, "b": 31240.51, "l": 23481.71}, {"n": "94437 - LETICIA DE LIMA SOBRINHO", "c": 45, "b": 28807.91, "l": 21282.98}, {"n": "86977 - VIVA PROMOTORA DE NEGOCIOS E COBRANCA LTDA", "c": 47, "b": 21023.79, "l": 15393.55}, {"n": "2133 - JULIO CESAR REIS CABRAL", "c": 42, "b": 18879.68, "l": 13619.93}, {"n": "2180 - FELIPE NUNES LOPES", "c": 33, "b": 16871.41, "l": 12373.78}, {"n": "1472 - ANDREIA CONCEICAO GONDIM DA COSTA", "c": 27, "b": 16852.77, "l": 12683.35}, {"n": "19839 - JESSYCA MESSIAS DE SOUZA", "c": 23, "b": 16105.12, "l": 11972.6}, {"n": "9285 - FREYTHAZ BRASIL NEGÓCIOS LTDA", "c": 25, "b": 15673.74, "l": 11640.84}, {"n": "99988 - 54.127.575 EMANOEL LOPES", "c": 14, "b": 13164.23, "l": 9898.73}],
+  fundos: [{"f": "ANGÁ", "c": 1713, "b": 1079207.72, "l": 803345.91}],
+
+  status: [{"s": "Desembolsado", "v": 1713}, {"s": "Cancelado", "v": 296}, {"s": "Assinatura reprovada", "v": 61}],
+
+  // TOTAIS
+  _meta: {
+    data_ref: "12/09/2025",
+    total_reg: 2070,
+    total_des: 1713,
+    conv_geral: 82.8,
+    total_bruto: 1079207.72,
+    total_liq: 803345.91,
+    fgts_total:2070, fgts_des:1713, fgts_b:1079207.72, fgts_l:803345.91, fgts_conv:82.8, fgts_tkb:630,
+    ec_total:0,   ec_des:0,   ec_b:0,   ec_l:0,   ec_conv:0,   ec_tkb:0,
+    st_des:1713, st_canc:296, st_ag:61,
+    // mês atual
+    mes_lbl: "Set/25",
+    mes_contr:735, mes_bruto:507430.59, mes_liq:379263.99,
+    mes_proj_b:1116347.3, mes_proj_l:834380.78, mes_proj_c:1617,
+    mes_pdu:10, mes_tdu:22, mes_pct:45.5,
+    mes_ant_b:530601.82, mes_ant_c:930, mes_var_b:110.4,
+    mes_prod: {"FGTS": {"c": 735, "b": 507430.59, "l": 379263.99}},
+    mes_fundo: {"ANGÁ": {"c": 735, "b": 507430.59, "l": 379263.99}},
+    // hoje
+    hoje_data: "12/09/2025",
+    hoje_c:1, hoje_b:329.76, hoje_l:215.46,
+    hoje_fgts_c:1, hoje_fgts_b:329.76, hoje_fgts_l:215.46,
+    hoje_ec_c:0,   hoje_ec_b:0,   hoje_ec_l:0,
+    hoje_parc: [{"n": "2180 - FELIPE NUNES LOPES", "c": 1, "b": 329.76, "l": 215.46}],
+    hoje_fundo: {"ANGÁ": {"c": 1, "b": 329.76, "l": 215.46}},
+    // sups
+    sup1_n:"JESSICA COUTINHO DE AZEVEDO", sup1_c:637, sup1_b:367716.43, sup1_l:272577.86,
+    sup2_n:"JHONATHAN ROSSI DA CRUZ", sup2_c:242, sup2_b:191695.47, sup2_l:143619.55,
+    sup3_n:"JESSICA ESTRATO GONCALVES", sup3_c:291, sup3_b:185216.41, sup3_l:137706.09,
+    sup4_n:"DINHO SILVA", sup4_c:219, sup4_b:123181.86, sup4_l:91368.89,
+  },
+};
+
+// %%DADOS_FIM%%
+
+// ── AUTENTICAÇÃO ────────────────────────────────────────────
+const _USERS = %%USUARIOS_HASH%%;
+
+async function _sha256(txt) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function tentarLogin() {
+  const user = document.getElementById('login_user').value.trim().toUpperCase();
+  const pass = document.getElementById('login_pass').value;
+  const err  = document.getElementById('login_err');
+  if(!user || !pass){ err.textContent='Preencha usuário e senha.'; return; }
+  const hash = await _sha256(pass);
+  if(_USERS[user] && _USERS[user] === hash){
+    sessionStorage.setItem('2s_auth', '1');
+    document.getElementById('login-overlay').classList.add('hidden');
+    err.textContent='';
+  } else {
+    err.textContent='Usuário ou senha incorretos.';
+    document.getElementById('login_pass').value='';
+  }
+}
+
+// Permite Enter no campo de senha
+document.addEventListener('DOMContentLoaded', function(){
+  ['login_user','login_pass'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.addEventListener('keydown', function(e){ if(e.key==='Enter') tentarLogin(); });
+  });
+  // Se já está autenticado na sessão, pula o login
+  if(sessionStorage.getItem('2s_auth')==='1'){
+    document.getElementById('login-overlay').classList.add('hidden');
+  }
+});
+
+
+Chart.defaults.color='#7d8590';
+Chart.defaults.borderColor='#30363d';
+Chart.defaults.font.family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+Chart.defaults.font.size=11;
+
+const FC={'Anga':'rgba(56,139,253,.8)','LA VIE PFO':'rgba(137,87,229,.8)','Nexa NXFS':'rgba(57,208,216,.8)','UY3 Asset':'rgba(210,153,34,.8)','HEAD':'rgba(248,81,73,.7)'};
+const fmtK=v=>v>=1000000?'R$ '+(v/1000000).toFixed(2)+'M':'R$ '+(v/1000).toFixed(0)+'K';
+const pt=n=>n.toLocaleString('pt-BR');
+const sn=n=>{const s=n.split(' - ');return s.length>1?s[1]:n;};
+
+function funil(id,data,total){
+  const col={Desembolsado:'#3fb950',Cancelado:'#f85149','Ag. Assinatura':'#388bfd','Ag. Desembolso':'#39d0d8','Assin. Reprovada':'#d29922',Pendente:'#7d8590',Outros:'#7d8590'};
+  document.getElementById(id).innerHTML=data.map(({s,v})=>{
+    const p=(v/total*100).toFixed(1);
+    return `<div class="fi"><div class="fl">${s}</div><div class="fbw"><div class="fb" style="width:${p}%;background:${col[s]||'#7d8590'}">${p}%</div></div><div class="fc">${pt(v)}</div></div>`;
+  }).join('');
+}
+
+const P1F={produto:'todos',fundo:'todos'};
+const P1C={};
+
+function p1ClearFilters(){
+  P1F.produto='todos'; P1F.fundo='todos';
+  document.querySelectorAll('#p1_bar [data-p1g]').forEach(b=>b.classList.toggle('active',b.dataset.v==='todos'));
+  document.getElementById('p1f_limpar').style.display='none';
+  rebuildP1Charts();
+}
+
+function rebuildP1Charts(){
+  ['mensal','prod','fundo'].forEach(k=>{try{if(P1C[k])P1C[k].destroy();}catch(e){}});
+  const p=P1F.produto, f=P1F.fundo;
+  const todosP=p==='todos', todosF=f==='todos';
+
+  // === Gráfico Mensal ===
+  let brutoArr,contratosArr,lblMensal='BRUTA';
+  if(!todosP){
+    brutoArr=D.meses.map(m=>{const r=(D.prodRows||[]).find(x=>x.p===p&&x.m===m);return r?r.b/1000:0;});
+    contratosArr=D.meses.map(m=>{const r=(D.prodRows||[]).find(x=>x.p===p&&x.m===m);return r?r.c:0;});
+    lblMensal=p;
+  } else if(!todosF){
+    brutoArr=D.meses.map(m=>{const r=(D.fundoRows||[]).find(x=>x.f===f&&x.m===m);return r?r.b/1000:0;});
+    contratosArr=D.meses.map(m=>{const r=(D.fundoRows||[]).find(x=>x.f===f&&x.m===m);return r?r.c:0;});
+    lblMensal=f;
+  } else {
+    brutoArr=D.bruto.map(v=>v/1000);
+    contratosArr=D.contratos;
+  }
+  const lblEl=document.getElementById('p1_lbl_mensal');
+  if(lblEl) lblEl.textContent=lblMensal;
+  P1C.mensal=new Chart(document.getElementById('c1_mensal'),{type:'bar',data:{labels:D.meses,datasets:[
+    {label:'Prod. Bruta 2S (R$ mil)',data:brutoArr,backgroundColor:D.meses.map((_,i)=>i===D.meses.length-1?'rgba(56,139,253,.85)':'rgba(56,139,253,.45)'),borderRadius:4,yAxisID:'y'},
+    {label:'Contratos',data:contratosArr,type:'line',yAxisID:'y2',borderColor:'#3fb950',backgroundColor:'rgba(63,185,80,.08)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#3fb950'}
+  ]},plugins:[{id:'mensalBarLabels',afterDatasetsDraw:function(chart){
+    var ctx=chart.ctx, ds=chart.data.datasets[0], meta=chart.getDatasetMeta(0);
+    ctx.save();
+    meta.data.forEach(function(bar,i){
+      var v=ds.data[i]; if(!v||v===0) return;
+      var h=bar.base-bar.y; if(h<14) return;
+      var lbl=v>=1000?'R$ '+(v/1000).toFixed(1).replace('.',',')+' M':'R$ '+Math.round(v)+'K';
+      ctx.font='bold 11px -apple-system,sans-serif';
+      ctx.fillStyle='rgba(255,255,255,.92)';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(lbl, bar.x, (bar.y+bar.base)/2);
+    });
+    ctx.restore();
+  }}],options:{responsive:true,plugins:{legend:{position:'top',labels:{boxWidth:10,padding:10}}},scales:{y:{grid:{color:'rgba(255,255,255,.04)'},title:{display:true,text:'Bruta R$ mil'}},y2:{position:'right',grid:{display:false},title:{display:true,text:'Contratos'}}}}});
+
+  // === Produto donut ===
+  const prodColors={'FGTS':'rgba(31,111,235,.8)','E-CONSIGNADO':'rgba(137,87,229,.8)','CLT':'rgba(57,208,216,.8)'};
+  let prodMap={};
+  if(!todosF){
+    Object.entries(D.prodFundo||{}).forEach(([pn,fm])=>{if(fm[f]) prodMap[pn]=fm[f];});
+  } else {
+    (D.prodRows||[]).forEach(r=>{if(!prodMap[r.p])prodMap[r.p]={b:0,l:0,c:0};prodMap[r.p].b+=r.b;prodMap[r.p].l+=r.l;prodMap[r.p].c+=r.c;});
+  }
+  const pNames=Object.keys(prodMap);
+  P1C.prod=new Chart(document.getElementById('c1_prod'),{type:'doughnut',data:{labels:pNames.map(pn=>pn+' (Bruta)'),datasets:[{
+    data:pNames.map(pn=>prodMap[pn]?.b||0),
+    backgroundColor:pNames.map(pn=>(!todosP&&pn!==p)?'rgba(125,133,144,.15)':(prodColors[pn]||'rgba(125,133,144,.8)')),
+    borderWidth:2,borderColor:'#161b22'
+  }]},options:{responsive:true,cutout:'65%',plugins:{legend:{position:'bottom',labels:{boxWidth:10}}}}});
+
+  // Mini-cards produto: destaca o selecionado
+  document.querySelectorAll('#p1_prodmini .pm').forEach(card=>{
+    card.style.opacity=(todosP||card.dataset.prod===p)?'1':'0.3';
+    card.style.transition='opacity .2s';
+  });
+
+  // === Fundo donut ===
+  let fundosArr=D.fundos;
+  if(!todosP){const pf=D.prodFundo?.[p]||{};fundosArr=Object.entries(pf).map(([fn,d])=>({f:fn,...d})).sort((a,b)=>b.b-a.b);}
+  const fl=fundosArr.map(x=>x.f);
+  if(fl.length) P1C.fundo=new Chart(document.getElementById('c1_fundo'),{type:'doughnut',data:{labels:fl,datasets:[{
+    data:fundosArr.map(x=>x.b),
+    backgroundColor:fl.map(fn=>(!todosF&&fn!==f)?'rgba(125,133,144,.2)':(FC[fn]||'#7d8590')),
+    borderWidth:2,borderColor:'#161b22'
+  }]},options:{responsive:true,cutout:'60%',plugins:{legend:{position:'right',labels:{boxWidth:8,padding:5}}}}});
+
+  // (funil removido do P1 — ver P4 Esteira & Conversão)
+
+  // Botão Limpar
+  const limpar=document.getElementById('p1f_limpar');
+  if(limpar) limpar.style.display=(!todosP||!todosF)?'':'none';
+}
+
+function buildP1(){
+  // ── Chips de filtro PRODUTO ──────────────────────────────────────────────
+  const prodCont=document.getElementById('p1f_prod');
+  const fundoCont=document.getElementById('p1f_fundo');
+  if(prodCont){
+    const pNames=[...new Set((D.prodRows||[]).map(r=>r.p))].sort();
+    prodCont.innerHTML=`<button class="f-btn active" data-p1g="produto" data-v="todos">Todos</button>`
+      +pNames.map(pn=>`<button class="f-btn" data-p1g="produto" data-v="${pn}">${pn}</button>`).join('');
+  }
+  if(fundoCont){
+    const fNames=(D.fundos||[]).map(x=>x.f);
+    fundoCont.innerHTML=`<button class="f-btn active" data-p1g="fundo" data-v="todos">Todos</button>`
+      +fNames.map(fn=>`<button class="f-btn" data-p1g="fundo" data-v="${fn}">${fn}</button>`).join('');
+  }
+  document.getElementById('p1_bar')?.addEventListener('click',e=>{
+    const btn=e.target.closest('[data-p1g]');
+    if(!btn) return;
+    const grp=btn.dataset.p1g, val=btn.dataset.v;
+    P1F[grp]=val;
+    if(grp==='produto'&&val!=='todos') P1F.fundo='todos';
+    if(grp==='fundo'&&val!=='todos') P1F.produto='todos';
+    document.querySelectorAll(`#p1_bar [data-p1g="${grp}"]`).forEach(b=>b.classList.toggle('active',b.dataset.v===val));
+    if(grp==='produto') document.querySelectorAll('#p1_bar [data-p1g="fundo"]').forEach(b=>b.classList.toggle('active',b.dataset.v==='todos'));
+    if(grp==='fundo') document.querySelectorAll('#p1_bar [data-p1g="produto"]').forEach(b=>b.classList.toggle('active',b.dataset.v==='todos'));
+    rebuildP1Charts();
+  });
+
+  // ── Mini-cards por produto (dinâmico — não hardcoded) ────────────────────
+  (function(){
+    const mini=document.getElementById('p1_prodmini');
+    if(!mini || !D.prodRows || !D.prodRows.length) return;
+    const pCores={
+      'FGTS':        ['🔵','var(--accent2)','rgba(31,111,235,.1)','rgba(31,111,235,.25)'],
+      'E-CONSIGNADO':['🟣','var(--purple)', 'rgba(137,87,229,.1)','rgba(137,87,229,.25)'],
+      'CLT':         ['🔷','var(--cyan)',   'rgba(57,208,216,.1)','rgba(57,208,216,.25)'],
+    };
+    // Agrega totais acumulados por produto
+    const totais={};
+    D.prodRows.forEach(r=>{
+      if(!totais[r.p]) totais[r.p]={c:0,b:0,l:0};
+      totais[r.p].c+=r.c; totais[r.p].b+=r.b; totais[r.p].l+=r.l;
+    });
+    // Taxa de conversão via E.porProduto (P4)
+    const convProd=(typeof E!=='undefined'&&E.porProduto)||{};
+    mini.innerHTML=Object.keys(totais).sort().map(pn=>{
+      const d=totais[pn];
+      const [em,cor,bg,border]=pCores[pn]||['⚪','var(--accent2)','rgba(56,139,253,.1)','rgba(56,139,253,.25)'];
+      const ep=convProd[pn]||{};
+      const conv=ep.total>0?Math.round(ep.desemb/ep.total*100):'-';
+      const cc=typeof conv==='number'?(conv>=70?'var(--green)':conv>=40?'var(--yellow)':'var(--red)'):'var(--muted)';
+      return `<div class="pm" data-prod="${pn}" style="flex:1;min-width:130px;border-radius:8px;padding:10px 12px;background:${bg};border:1px solid ${border}">
+        <div style="color:${cor};font-size:11px;font-weight:700;margin-bottom:6px">${em} ${pn}</div>
+        <div class="pm-row"><span class="pm-lbl">Contratos</span><span class="pm-val" data-f="c">${pt(d.c)}</span></div>
+        <div class="pm-row"><span class="pm-lbl">Bruta <span class="visao-2s" style="font-size:8px">2S</span></span><span class="pm-val" style="color:var(--accent2)" data-f="b">${fmtK(d.b)}</span></div>
+        <div class="pm-row"><span class="pm-lbl">Líquida</span><span class="pm-val" style="color:var(--purple)" data-f="l">${fmtK(d.l)}</span></div>
+        <div class="pm-row"><span class="pm-lbl">Conversão</span><span class="pm-val" style="color:${cc}" data-f="conv">${conv}%</span></div>
+      </div>`;
+    }).join('');
+  })();
+
+  // ── Tabela Histórico Mensal ──────────────────────────────────────────────
+  (function(){
+    const tbg=document.getElementById('tb_g');
+    if(!tbg || !D.meses || !D.meses.length) return;
+    const tb=D.bruto.reduce((a,b)=>a+b,0),tl=D.liquido.reduce((a,b)=>a+b,0),tc=D.contratos.reduce((a,b)=>a+b,0);
+    tbg.innerHTML=D.meses.map((m,i)=>
+      `<tr><td><strong>${m}</strong></td><td>${pt(D.contratos[i])}</td>
+      <td class="td-bruto">${fmtK(D.bruto[i])}</td>
+      <td class="td-liq">${fmtK(D.liquido[i])}</td>
+      <td class="td-bruto">R$ ${D.contratos[i]>0?(D.bruto[i]/D.contratos[i]).toFixed(0):'-'}</td>
+      <td class="td-liq">R$ ${D.contratos[i]>0?(D.liquido[i]/D.contratos[i]).toFixed(0):'-'}</td>
+      <td>${tb>0?(D.bruto[i]/tb*100).toFixed(1):'0.0'}%</td></tr>`
+    ).join('')
+    +`<tr class="tr-total"><td>TOTAL</td><td>${pt(tc)}</td><td class="td-bruto">${fmtK(tb)}</td><td class="td-liq">${fmtK(tl)}</td>
+      <td class="td-bruto">R$ ${tc>0?Math.round(tb/tc).toLocaleString('pt-BR'):'-'}</td>
+      <td class="td-liq">R$ ${tc>0?Math.round(tl/tc).toLocaleString('pt-BR'):'-'}</td><td>100%</td></tr>`;
+  })();
+
+  rebuildP1Charts();
+}
+
+function buildP2(){
+  const mU=D.meses;
+
+  // ── Gráfico dia a dia do mês atual ─────────────────────────
+  (function(){
+    var dd = D._meta && D._meta.dia_dia;
+    if(!dd || !dd.length) return;
+    var labels  = dd.map(function(x){ return x.d+''; });
+    var bruta   = dd.map(function(x){ return x.b; });
+    var contr   = dd.map(function(x){ return x.c; });
+    var mesLbl  = (D._meta && D._meta.mes_lbl) || '';
+    var el = document.getElementById('diad_mes_lbl');
+    if(el) el.textContent = mesLbl;
+    var ctx = document.getElementById('c_dia_dia');
+    if(!ctx) return;
+    new Chart(ctx, {
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            type: 'bar',
+            label: 'Bruta',
+            data: bruta,
+            backgroundColor: 'rgba(56,139,253,.55)',
+            borderColor:     'rgba(56,139,253,.85)',
+            borderWidth: 1,
+            borderRadius: 4,
+            yAxisID: 'yB',
+            order: 2
+          },
+          {
+            type: 'line',
+            label: 'Contratos',
+            data: contr,
+            borderColor:     'rgba(63,185,80,.9)',
+            backgroundColor: 'rgba(63,185,80,.12)',
+            borderWidth: 2.5,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            pointBackgroundColor: 'rgba(63,185,80,.9)',
+            tension: 0.35,
+            fill: true,
+            yAxisID: 'yC',
+            order: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(ctx){
+                if(ctx.dataset.label==='Bruta'){
+                  var v=ctx.raw; return ' Bruta: R$ '+(v>=1000000?(v/1000000).toFixed(2)+'M':v>=1000?(v/1000).toFixed(0)+'K':Math.round(v).toLocaleString('pt-BR'));
+                }
+                return ' Contratos: '+ctx.raw;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(48,54,61,.5)' },
+            ticks: { color: '#7d8590', font: { size: 11 } }
+          },
+          yB: {
+            position: 'left',
+            grid: { color: 'rgba(48,54,61,.4)' },
+            ticks: {
+              color: '#388bfd',
+              font: { size: 10 },
+              callback: function(v){ return v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v; }
+            }
+          },
+          yC: {
+            position: 'right',
+            grid: { display: false },
+            ticks: { color: '#3fb950', font: { size: 10 } }
+          }
+        }
+      }
+    });
+  })();
+
+  // Preenche mes-box com dados do D._meta
+  (function(){
+    if(!D._meta) return;
+    var m=D._meta;
+    var fmtK=function(v){if(!v||v==0) return "R$ 0"; return v>=1000000?"R$ "+(v/1000000).toFixed(2)+"M":v>=1000?"R$ "+(v/1000).toFixed(0)+"K":"R$ "+Math.round(v);};
+    var $=function(id){return document.getElementById(id);};
+    if($("mes_titulo_lbl"))$("mes_titulo_lbl").textContent=m.mes_lbl;
+    if($("mes_du_info"))$("mes_du_info").textContent=m.mes_pdu+" dias uteis concluidos de "+m.mes_tdu;
+    if($("mes_pct_chip"))$("mes_pct_chip").textContent=m.mes_pct+"% concluido";
+    if($("mes_prog_fill"))$("mes_prog_fill").style.width=m.mes_pct+"%";
+    if($("mes_contr_real"))$("mes_contr_real").textContent=m.mes_contr;
+    if($("mes_contr_dia"))$("mes_contr_dia").textContent=Math.round(m.mes_contr/m.mes_pdu)+" contratos / dia util";
+    if($("mes_bruto_real"))$("mes_bruto_real").textContent=fmtK(m.mes_bruto);
+    if($("mes_bruto_dia"))$("mes_bruto_dia").textContent=fmtK(Math.round(m.mes_bruto/m.mes_pdu))+" / dia util";
+    if($("mes_liq_real"))$("mes_liq_real").textContent="Liquida: "+fmtK(m.mes_liq);
+    if($("mes_contr_proj"))$("mes_contr_proj").textContent=m.mes_proj_c+" ↗";
+    if($("mes_bruto_proj"))$("mes_bruto_proj").textContent=fmtK(m.mes_proj_b)+" ↗";
+    if($("mes_liq_proj"))$("mes_liq_proj").textContent="Liquida proj.: "+fmtK(m.mes_proj_l);
+    // Por produto do mes — cards + mini donut
+    var pc=$("mes_prod_container");
+    if(pc && m.mes_prod){
+      pc.innerHTML="";
+      var prodCor={FGTS:["var(--accent2)","rgba(31,111,235,.08)","rgba(31,111,235,.2)"],CLT:["var(--accent2)","rgba(31,111,235,.08)","rgba(31,111,235,.2)"],"E-CONSIGNADO":["var(--purple)","rgba(137,87,229,.08)","rgba(137,87,229,.2)"]};
+      Object.keys(m.mes_prod).forEach(function(p){
+        var d=m.mes_prod[p]; var cfg=prodCor[p]||["var(--accent2)","rgba(56,139,253,.08)","rgba(56,139,253,.2)"];
+        pc.innerHTML+="<div style=\"flex:1;min-width:120px;border-radius:8px;padding:10px;border:1px solid "+cfg[2]+";background:"+cfg[1]+";text-align:center\"><div style=\"font-size:10px;font-weight:700;color:"+cfg[0]+"\">"+p+"</div><div style=\"font-size:17px;font-weight:700\">"+d.c+"</div><div style=\"color:var(--muted);font-size:10px\">contratos</div><div style=\"font-size:12px;font-weight:700;color:var(--accent2)\">"+fmtK(d.b)+"</div><div style=\"font-size:11px;color:var(--purple)\">"+fmtK(d.l)+" liq.</div></div>";
+      });
+      // Mini donut bruta por produto
+      var prodNames2=Object.keys(m.mes_prod);
+      var prodColors2={'FGTS':'rgba(31,111,235,.8)','E-CONSIGNADO':'rgba(137,87,229,.8)','CLT':'rgba(57,208,216,.8)'};
+      var ctx2p=document.getElementById('c2_mes_prod_mini');
+      if(ctx2p && prodNames2.length) new Chart(ctx2p,{type:'doughnut',data:{labels:prodNames2,datasets:[{data:prodNames2.map(function(p){return m.mes_prod[p].b;}),backgroundColor:prodNames2.map(function(p){return prodColors2[p]||'rgba(125,133,144,.8)';}),borderWidth:2,borderColor:'#161b22'}]},options:{responsive:true,cutout:'60%',plugins:{legend:{position:'right',labels:{boxWidth:8,padding:4,font:{size:10}}}}}});
+    }
+    // Por fundo do mes — tabela + mini donut
+    var fundoCls={"Anga":"bb","LA VIE PFO":"bp","Nexa NXFS":"bc","UY3 Asset":"by","HEAD":"br"};
+    var fb=$("mes_fundo_tbody");
+    if(fb && m.mes_fundo){
+      var totalB=Object.values(m.mes_fundo).reduce(function(a,b){return a+b.b;},0)||1;
+      var fundoKeys=Object.keys(m.mes_fundo).sort(function(a,b){return m.mes_fundo[b].b-m.mes_fundo[a].b;});
+      fb.innerHTML=fundoKeys.map(function(f){
+        var d=m.mes_fundo[f]; var cls=fundoCls[f]||"bb";
+        return "<tr><td><span class=\"b "+cls+"\">"+f+"</span></td><td>"+d.c+"</td><td class=\"td-bruto\">"+fmtK(d.b)+"</td><td class=\"td-liq\">"+fmtK(d.l)+"</td><td style=\"font-size:10px;color:var(--muted)\">"+Math.round(d.b/totalB*100)+"%</td></tr>";
+      }).join("");
+      // Mini donut bruta por fundo
+      var ctx2f=document.getElementById('c2_mes_fundo_mini');
+      if(ctx2f && fundoKeys.length) new Chart(ctx2f,{type:'doughnut',data:{labels:fundoKeys,datasets:[{data:fundoKeys.map(function(f){return m.mes_fundo[f].b;}),backgroundColor:fundoKeys.map(function(f){return FC[f]||'#7d8590';}),borderWidth:2,borderColor:'#161b22'}]},options:{responsive:true,cutout:'60%',plugins:{legend:{position:'right',labels:{boxWidth:8,padding:4,font:{size:10}}}}}});
+    }
+    // Comparativo Mes vs Mes Anterior — usa mês CALENDÁRIO anterior (corrigido)
+    var mesAntLbl = m.mes_ant_lbl || "Anterior";
+    var mesAntB   = m.mes_ant_b   || 0;
+    var mesAntC   = m.mes_ant_c   || 0;
+    var varPct = mesAntB>0 ? Math.round((m.mes_proj_b/mesAntB-1)*100) : 0;
+    var corVar = varPct>=0 ? "var(--green)" : "var(--red)";
+    if($("mes_var_pct")) {
+      $("mes_var_pct").textContent = (varPct>=0?"▲ ":"▾ ") + Math.abs(varPct) + "%";
+      $("mes_var_pct").style.color = corVar;
+    }
+    if($("mes_ant_val")) $("mes_ant_val").textContent = fmtK(mesAntB);
+    if($("mes_ant_contr")) $("mes_ant_contr").textContent = mesAntC.toLocaleString('pt-BR') + " contratos · " + mesAntLbl;
+    if($("mes_proj_resumo")) $("mes_proj_resumo").textContent = fmtK(m.mes_proj_b);
+    if($("mes_proj_contr")) $("mes_proj_contr").textContent = (m.mes_proj_c||0).toLocaleString('pt-BR') + " contratos · " + m.mes_lbl;
+
+    var ctxComp = document.getElementById('c2_comp');
+    if (ctxComp) {
+      var realizado = (m.mes_bruto||0) / 1000;
+      var projRestante = Math.max(0, ((m.mes_proj_b||0) - (m.mes_bruto||0)) / 1000);
+      var antVal = (mesAntB||0) / 1000;
+      new Chart(ctxComp, {
+        type: 'bar',
+        data: {
+          labels: [mesAntLbl, m.mes_lbl + ' (proj.)'],
+          datasets: [
+            {label:'Realizado', data:[antVal, realizado], backgroundColor:['rgba(125,133,144,.55)','rgba(63,185,80,.75)'], borderRadius:4, borderSkipped:false},
+            {label:'Falta p/ projeção', data:[0, projRestante], backgroundColor:'rgba(210,153,34,.55)', borderRadius:4, borderSkipped:false}
+          ]
+        },
+        options: {
+          indexAxis:'y', responsive:true,
+          plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': R$ '+(ctx.parsed.x*1000).toLocaleString('pt-BR',{maximumFractionDigits:0});}}}},
+          scales:{x:{stacked:true,grid:{color:'rgba(255,255,255,.04)'},ticks:{font:{size:10},callback:function(v){return v>=1000?(v/1000).toFixed(1)+'M':v+'K';}}},y:{stacked:true,grid:{display:false},ticks:{font:{size:11,weight:'600'}}}}
+        }
+      });
+    }
+  })();
+
+  // Preenche hoje-box com dados do D._meta
+
+  (function(){
+    if(!D._meta) return;
+    var m=D._meta;
+    var fmtB=function(v){if(!v) return "R$ 0"; return v>=1000000?"R$ "+(v/1000000).toFixed(2)+"M":v>=1000?"R$ "+(v/1000).toFixed(0)+"K":"R$ "+Math.round(v);};
+    var $=function(id){return document.getElementById(id);};
+    if($("hoje_titulo"))$("hoje_titulo").textContent="Pagamentos do Dia - "+m.hoje_data;
+    if($("hoje_c_val"))$("hoje_c_val").textContent=m.hoje_c;
+    if($("hoje_b_val"))$("hoje_b_val").textContent=fmtB(m.hoje_b);
+    if($("hoje_l_val"))$("hoje_l_val").textContent=fmtB(m.hoje_l);
+    if($("hoje_tk_val"))$("hoje_tk_val").textContent=m.hoje_c>0?"R$ "+Math.round(m.hoje_b/m.hoje_c):"---";
+    // Por produto
+    var pc=$("hoje_prod_container");
+    if(pc && m.hoje_prod){
+      pc.innerHTML="";
+      var prodCor={FGTS:["var(--accent2)","rgba(31,111,235,.08)","rgba(31,111,235,.2)"],CLT:["var(--accent2)","rgba(31,111,235,.08)","rgba(31,111,235,.2)"],"E-CONSIGNADO":["var(--purple)","rgba(137,87,229,.08)","rgba(137,87,229,.2)"],"E-CONSIG":["var(--purple)","rgba(137,87,229,.08)","rgba(137,87,229,.2)"]};
+      Object.keys(m.hoje_prod).forEach(function(p){
+        var d=m.hoje_prod[p]; var cfg=prodCor[p]||["var(--accent2)","rgba(56,139,253,.08)","rgba(56,139,253,.2)"];
+        var tkt = d.c>0 ? "R$ " + Math.round(d.b/d.c).toLocaleString('pt-BR') : "---";
+        pc.innerHTML+=
+          "<div style=\"flex:1;min-width:155px;border-radius:10px;padding:14px 16px;border:1px solid "+cfg[2]+";background:"+cfg[1]+";text-align:center\">"+
+          "<div style=\"font-size:13px;font-weight:800;color:"+cfg[0]+";margin-bottom:8px;letter-spacing:.5px\">"+p+"</div>"+
+          "<div style=\"font-size:28px;font-weight:800;line-height:1.1\">"+d.c+"</div>"+
+          "<div style=\"color:var(--muted);font-size:11px;margin-bottom:8px\">contratos</div>"+
+          "<div style=\"display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px;padding-top:6px;border-top:1px dashed "+cfg[2]+"\">"+
+            "<span>Bruta</span><span style=\"color:var(--accent2);font-weight:700;font-size:13px\">"+fmtB(d.b)+"</span>"+
+          "</div>"+
+          "<div style=\"display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:3px\">"+
+            "<span>Liquida</span><span style=\"color:var(--purple);font-weight:600;font-size:12px\">"+fmtB(d.l)+"</span>"+
+          "</div>"+
+          "<div style=\"display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:3px\">"+
+            "<span>Ticket Medio</span><span style=\"color:var(--yellow);font-weight:700;font-size:12px\">"+tkt+"</span>"+
+          "</div>"+
+          "</div>";
+      });
+    }
+    // Por fundo
+    var fundoCls={"Anga":"bb","LA VIE PFO":"bp","Nexa NXFS":"bc","UY3 Asset":"by","HEAD":"br"};
+    var fb=$("hoje_fundo_tbody");
+    if(fb && m.hoje_fundo){
+      fb.innerHTML=Object.keys(m.hoje_fundo).sort(function(a,b){return m.hoje_fundo[b].b-m.hoje_fundo[a].b;}).map(function(f){
+        var d=m.hoje_fundo[f]; var cls=fundoCls[f]||"bb";
+        return "<tr><td><span class=\"b "+cls+"\">"+f+"</span></td><td>"+d.c+"</td><td class=\"td-bruto\">"+fmtB(d.b)+"</td><td class=\"td-liq\">"+fmtB(d.l)+"</td></tr>";
+      }).join("");
+    }
+    // Parceiros
+    var pb=$("hoje_parc_tbody");
+    if(pb && m.hoje_parc){
+      pb.innerHTML=m.hoje_parc.map(function(p,i){
+        return "<tr><td class=\"rank\">"+(i+1)+"</td><td style=\"font-size:12px;font-weight:500;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap\">"+p.n+"</td><td style=\"font-weight:600\">"+p.c+"</td><td class=\"td-bruto\">"+fmtB(p.b)+"</td><td class=\"td-liq\">"+fmtB(p.l)+"</td></tr>";
+      }).join("");
+    }
+
+    // ── Mini gráficos ──────────────────────────────────────────
+    var fmtTip = function(v){return ' R$ '+Math.round(v).toLocaleString('pt-BR');};
+
+    // Gráfico Por Fundo — donut com legenda lateral
+    if(m.hoje_fundo && Object.keys(m.hoje_fundo).length){
+      var fKeys=Object.keys(m.hoje_fundo).sort(function(a,b){return m.hoje_fundo[b].b-m.hoje_fundo[a].b;});
+      var ctxFundo=document.getElementById('hoje_fundo_chart');
+      if(ctxFundo){
+        if(ctxFundo._hj) ctxFundo._hj.destroy();
+        ctxFundo._hj = new Chart(ctxFundo,{
+          type:'doughnut',
+          data:{
+            labels:fKeys,
+            datasets:[{
+              data:fKeys.map(function(f){return m.hoje_fundo[f].b;}),
+              backgroundColor:fKeys.map(function(f){return FC[f]||'rgba(125,133,144,.6)';}),
+              borderWidth:3, borderColor:'#161b22', hoverOffset:6
+            }]
+          },
+          options:{
+            responsive:true, cutout:'58%',
+            plugins:{
+              legend:{position:'right', labels:{boxWidth:11,padding:10,color:'#c9d1d9',font:{size:12}}},
+              tooltip:{callbacks:{label:function(ctx){return ' '+ctx.label+':'+fmtTip(ctx.raw);}}}
+            }
+          }
+        });
+      }
+    }
+  })();
+
+  // ── Análise de Tabelas — mês atual ─────────────────────────
+  (function(){
+    if(!D._meta) return;
+    var m = D._meta;
+    var tabData    = m.mes_tabela     || [];
+    var tabByProd  = m.mes_tabela_prod || {};
+    var card = document.getElementById('card_tabelas');
+    if(!tabData.length){ if(card) card.style.display='none'; return; }
+
+    var fmtB = function(v){ if(!v||v===0) return 'R$ 0'; return v>=1000000?'R$ '+(v/1000000).toFixed(2)+'M':v>=1000?'R$ '+(v/1000).toFixed(0)+'K':'R$ '+Math.round(v); };
+
+    // Label mês
+    var lblEl = document.getElementById('tab_mes_lbl');
+    if(lblEl && m.mes_lbl) lblEl.textContent = m.mes_lbl;
+
+    // Populate product filter buttons
+    var tabFProd = document.getElementById('tab_f_prod');
+    var prods = Object.keys(tabByProd).sort();
+    prods.forEach(function(p){
+      var btn = document.createElement('button');
+      btn.className = 'f-btn';
+      btn.setAttribute('data-tabf', p);
+      btn.textContent = p;
+      tabFProd.appendChild(btn);
+    });
+
+    var tabFState = 'todos';
+
+    function renderResumo(data){
+      var totalDig  = data.reduce(function(a,r){ return a+(r.C||0); },0);
+      var totalDes  = data.reduce(function(a,r){ return a+(r.Cdes||r.C||0); },0);
+      var totalB    = data.reduce(function(a,r){ return a+(r.B||0); },0);
+      var totalL    = data.reduce(function(a,r){ return a+(r.L||0); },0);
+      var tkt       = totalDes>0 ? Math.round(totalB/totalDes) : 0;
+      var conv      = totalDig>0 ? Math.round(totalDes/totalDig*100) : 0;
+      var el = document.getElementById('tab_resumo');
+      if(!el) return;
+      var div = function(lbl,val,sub,cor){
+        return '<div style="display:flex;flex-direction:column;gap:2px">'+
+          '<div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">'+lbl+'</div>'+
+          '<div style="font-size:18px;font-weight:800;color:'+cor+'">'+val+'</div>'+
+          '<div style="font-size:10px;color:var(--muted)">'+sub+'</div>'+
+        '</div>';
+      };
+      var sep = '<div style="width:1px;background:var(--border);margin:0 4px"></div>';
+      el.innerHTML =
+        div('Tabelas',    data.length,                        'distintas',          'var(--cyan)')   + sep +
+        div('Digitados',  totalDig.toLocaleString('pt-BR'),   'no mês',             'var(--text)')   + sep +
+        div('Desembolsados', totalDes.toLocaleString('pt-BR')+'<span style="font-size:11px;color:var(--muted);font-weight:500"> · '+conv+'%</span>', 'convertidos', 'var(--green)') + sep +
+        div('Prod. Bruta', fmtB(totalB),                      '2S · visão fintech', 'var(--accent2)') + sep +
+        div('Ticket Médio','R$ '+tkt.toLocaleString('pt-BR'), 'bruto / desembolsado','var(--yellow)');
+    }
+
+    function renderTabela(){
+      var data = tabFState==='todos' ? tabData : (tabByProd[tabFState]||[]);
+      renderResumo(data);
+      var tbody = document.getElementById('tab_tbody');
+      if(!tbody) return;
+      if(!data.length){
+        tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:18px">Sem dados para o filtro selecionado</td></tr>';
+        return;
+      }
+      var maxB   = Math.max.apply(null, data.map(function(r){ return r.B||0; }));
+      var totalB = data.reduce(function(a,r){ return a+(r.B||0); },0) || 1;
+      tbody.innerHTML = data.map(function(r,i){
+        var cdes  = r.Cdes !== undefined ? r.Cdes : r.C;
+        var tkt   = cdes>0 ? 'R$ '+Math.round(r.B/cdes).toLocaleString('pt-BR') : '—';
+        var share = ((r.B||0)/totalB*100).toFixed(1);
+        var bar   = maxB>0 ? Math.round((r.B||0)/maxB*100) : 0;
+        var convRow = r.C>0 ? Math.round(cdes/r.C*100)+'%' : '—';
+        return '<tr>'+
+          '<td class="rank">'+(i+1)+'</td>'+
+          '<td style="font-size:12.5px;font-weight:600;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.Tabela||'—')+'</td>'+
+          '<td style="font-weight:500;color:var(--muted)">'+r.C.toLocaleString('pt-BR')+'</td>'+
+          '<td style="font-weight:700;color:var(--green)">'+cdes.toLocaleString('pt-BR')+'<span style="font-size:10px;color:var(--muted);font-weight:400"> · '+convRow+'</span></td>'+
+          '<td class="td-bruto">'+fmtB(r.B)+'<div class="bw"><div class="bf" style="width:'+bar+'%;background:rgba(56,139,253,.7)"></div></div></td>'+
+          '<td class="td-liq">'+fmtB(r.L)+'</td>'+
+          '<td style="font-size:12px;color:var(--yellow);font-weight:700">'+tkt+'</td>'+
+          '<td style="font-size:11px;color:var(--muted)">'+share+'%</td>'+
+          '</tr>';
+      }).join('');
+    }
+
+    renderTabela();
+
+    // Filter click
+    if(tabFProd){
+      tabFProd.addEventListener('click', function(e){
+        var btn = e.target.closest('[data-tabf]');
+        if(!btn) return;
+        tabFState = btn.getAttribute('data-tabf');
+        tabFProd.querySelectorAll('.f-btn').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+        renderTabela();
+      });
+    }
+  })();
+
+}
+
+// ===== P3 DATA =====
+const P3D = {
+  sup_list: ["1803 - JESSICA COUTINHO DE AZEVEDO", "1003 - JHONATHAN ROSSI DA CRUZ", "7842 - JESSICA ESTRATO GONCALVES", "7722 - DINHO SILVA", "4457 - CASSIO LEMOS NETO", "2389 - FELIPE CUNHA DE JESUS"],
+  reg_list: ["0114 - ARTHUR ROZA NETO", "33014 - ALLEF KAYQUE MARQUES BONS OLHOS", "1784 - GEANDERSON LOCKS NAZARIO DE OLIVEIRA", "17890 - RENAN LELES DOS SANTOS (CHECK)", "2523 - JHONATHAN ROSSI DA CRUZ", "2097 - ODAILTON SOUSA MALVEIRA", "1292 - RODRIGO VALCI SILVEIRA", "8211 - ALLAN MONTEIRO DE LIMA", "26248 - FELIPE CUNHA DE JESUS", "6051 - NEXTT PROMOTORA (REGIONAL)", "1595 - STELA PESSOA DOMINGOS", "0769 - MELHOR CRÉDITO (REGIONAL)", "25576 - JOSE DIONISIO ALBUQUERQUE JUNIOR", "3474 - BRUNO SANTANA FERREIRA", "0604 - DINHO SILVA"],
+  mes_list: ["Ago/25", "Set/25"],
+  mes_lbl:  {"Ago/25": "Ago/25", "Set/25": "Set/25"},
+  by_sup:   [{"Superintendente": "1803 - JESSICA COUTINHO DE AZEVEDO", "C": 637, "B": 367716.43, "L": 272577.86}, {"Superintendente": "1003 - JHONATHAN ROSSI DA CRUZ", "C": 242, "B": 191695.47, "L": 143619.55}, {"Superintendente": "7842 - JESSICA ESTRATO GONCALVES", "C": 291, "B": 185216.41, "L": 137706.09}, {"Superintendente": "7722 - DINHO SILVA", "C": 219, "B": 123181.86, "L": 91368.89}, {"Superintendente": "4457 - CASSIO LEMOS NETO", "C": 188, "B": 102296.92, "L": 76335.53}, {"Superintendente": "2389 - FELIPE CUNHA DE JESUS", "C": 108, "B": 85958.57, "L": 64282.89}],
+  by_reg:   [{"Regional": "0114 - ARTHUR ROZA NETO", "C": 637, "B": 367716.43, "L": 272577.86}, {"Regional": "33014 - ALLEF KAYQUE MARQUES BONS OLHOS", "C": 291, "B": 185216.41, "L": 137706.09}, {"Regional": "1784 - GEANDERSON LOCKS NAZARIO DE OLIVEIRA", "C": 121, "B": 122074.15, "L": 91928.48}, {"Regional": "17890 - RENAN LELES DOS SANTOS (CHECK)", "C": 202, "B": 107479.26, "L": 79564.36}, {"Regional": "2523 - JHONATHAN ROSSI DA CRUZ", "C": 108, "B": 63177.62, "L": 46934.64}, {"Regional": "2097 - ODAILTON SOUSA MALVEIRA", "C": 75, "B": 59978.94, "L": 44969.88}, {"Regional": "1292 - RODRIGO VALCI SILVEIRA", "C": 116, "B": 59383.32, "L": 44562.23}, {"Regional": "8211 - ALLAN MONTEIRO DE LIMA", "C": 67, "B": 30368.45, "L": 22152.01}, {"Regional": "26248 - FELIPE CUNHA DE JESUS", "C": 18, "B": 19997.27, "L": 15045.39}, {"Regional": "6051 - NEXTT PROMOTORA (REGIONAL)", "C": 14, "B": 13164.23, "L": 9898.73}, {"Regional": "1595 - STELA PESSOA DOMINGOS", "C": 5, "B": 12545.15, "L": 9621.29}, {"Regional": "0769 - MELHOR CRÉDITO (REGIONAL)", "C": 13, "B": 6443.7, "L": 4756.43}, {"Regional": "25576 - JOSE DIONISIO ALBUQUERQUE JUNIOR", "C": 15, "B": 5982.36, "L": 4267.62}, {"Regional": "3474 - BRUNO SANTANA FERREIRA", "C": 2, "B": 2277.68, "L": 1739.19}, {"Regional": "0604 - DINHO SILVA", "C": 1, "B": 260.69, "L": 166.61}],
+  by_com:   [{"Comercial": "5507 - THAYSE DO LIVRAMENTO PEREIRA", "C": 115, "B": 119258.41, "L": 89847.49}, {"Comercial": "92538 - ALLEF KAYQUE MARQUES BONS OLHOS", "C": 208, "B": 110390.33, "L": 81370.17}, {"Comercial": "73806 - CRISTIANE APARECIDA NUNES SANTOS (CHECK)", "C": 202, "B": 107479.26, "L": 79564.36}, {"Comercial": "4935 - LUAN MATHEUS DE CARVALHO CECHET", "C": 209, "B": 98816.4, "L": 71915.86}, {"Comercial": "58528 - LEONARDO GOMES DEUDEGANT", "C": 83, "B": 74826.08, "L": 56335.92}, {"Comercial": "9482 - GABRIELA GRASSO STIVAL", "C": 95, "B": 53002.75, "L": 39183.6}, {"Comercial": "2301 - GRAZIELLI MACHADO DA SILVA", "C": 79, "B": 49475.56, "L": 37357.5}, {"Comercial": "3554 - LUIS FERNANDO BERTHOLDO", "C": 48, "B": 48103.25, "L": 36150.24}, {"Comercial": "94145 - KATIA APARECIDA PINHEIRO", "C": 62, "B": 43838.52, "L": 32588.29}, {"Comercial": "31665 - KARINE LOYANE MALHEIRO SILVA", "C": 85, "B": 43409.03, "L": 32184.13}, {"Comercial": "84816 - PATRICIA ARBAITER SOARES DA SILVA", "C": 60, "B": 33003.95, "L": 24765.71}, {"Comercial": "11446 - ADRIANA APARECIDA GUIMARAES", "C": 31, "B": 28081.1, "L": 21261.95}, {"Comercial": "2561 - TIAGO DA SILVA CERQUEIRA", "C": 41, "B": 27948.17, "L": 20857.9}, {"Comercial": "4513 - FABIANO NETO", "C": 55, "B": 26300.4, "L": 19746.52}, {"Comercial": "0060 - AMANDA DA SILVA MARINS BARROS", "C": 47, "B": 20541.03, "L": 14851.41}, {"Comercial": "71284 - ALVARO BEZERRA ARAUJO", "C": 18, "B": 19997.27, "L": 15045.39}, {"Comercial": "64558 - GABRIELA CRISTINA BORGES", "C": 18, "B": 19433.8, "L": 14757.27}, {"Comercial": "41090 - VIVIANE MOURA DE SOUSA", "C": 13, "B": 16140.42, "L": 12381.59}, {"Comercial": "5312 - ANDREIA REGINA DE SOUZA BASTIDA", "C": 29, "B": 14056.35, "L": 10251.94}, {"Comercial": "23181 - ERIS GREIDON HARDEN VIEIRA FILHO (NEXTT)", "C": 14, "B": 13164.23, "L": 9898.73}, {"Comercial": "2282 - ALEX DA PAIXAO MARTINS", "C": 4, "B": 12377.88, "L": 9511.29}, {"Comercial": "8475 - LETICIA MAZIERO MENESES", "C": 22, "B": 11449.57, "L": 8521.0}, {"Comercial": "9288 - ROBERTO DE MOURA LESSA", "C": 25, "B": 11410.1, "L": 8482.92}, {"Comercial": "9313 - LUDMILA KARINA SILVA LOPES", "C": 24, "B": 9295.87, "L": 6768.01}, {"Comercial": "8890 - ALINE ROSE DE MELO", "C": 16, "B": 7452.44, "L": 5484.06}, {"Comercial": "6528 - ELIZABETE REGODANSO BARBOSA OKAMOTO", "C": 14, "B": 7016.23, "L": 5132.06}, {"Comercial": "8758 - MELHOR CRÉDITO (COMERCIAL)", "C": 13, "B": 6443.7, "L": 4756.43}, {"Comercial": "0114 - ARTHUR ROZA NETO", "C": 12, "B": 5845.36, "L": 4322.66}, {"Comercial": "25576 - JOSE DIONISIO ALBUQUERQUE JUNIOR", "C": 6, "B": 3155.11, "L": 2306.15}, {"Comercial": "7600 - DANIELLE SIQUEIRA COUTO", "C": 5, "B": 3145.39, "L": 2338.36}, {"Comercial": "3495 - MARIA EDUARDA BOGONI BRUSTOLIN", "C": 6, "B": 2815.74, "L": 2080.99}, {"Comercial": "5118 - SERGIO SCHMITT FRANCA", "C": 12, "B": 2780.1, "L": 1843.64}, {"Comercial": "1579 - WEPAY 1", "C": 2, "B": 2277.68, "L": 1739.19}, {"Comercial": "60001 - LARYSSA SANTOS DE MELO", "C": 6, "B": 1398.93, "L": 935.49}, {"Comercial": "62861 - KELI PEREIRA DOS SANTOS", "C": 2, "B": 1038.56, "L": 750.64}, {"Comercial": "5845 - CRISTINA CIANO ARAUJO DE ANDRADE", "C": 1, "B": 389.76, "L": 275.34}, {"Comercial": "2961 - DINHO SILVA", "C": 1, "B": 260.69, "L": 166.61}, {"Comercial": "4682 - CAMILA MATOS AGUIAR RIBEIRO", "C": 1, "B": 167.27, "L": 110.0}, {"Comercial": "5494 - ARIANE JANDIRA ASSUNCAO", "C": 1, "B": 78.97, "L": 50.0}],
+  by_parc:  [{"Nome parceiro": "52914 - ERIKA RUBIAM DE SOUZA", "C": 68, "B": 99480.73, "L": 75581.44}, {"Nome parceiro": "45931 - THALLES HENRIQUE CUNHA GONÇALVES", "C": 137, "B": 76125.38, "L": 56448.74}, {"Nome parceiro": "9976 - MICHELLA KAREM VARGAS", "C": 180, "B": 74532.31, "L": 53616.04}, {"Nome parceiro": "5172 - MY C CONSIGNADO LTDA", "C": 116, "B": 63132.63, "L": 46385.15}, {"Nome parceiro": "72449 - SCHAID ALMEIDA PIEDADE", "C": 49, "B": 42688.65, "L": 32039.39}, {"Nome parceiro": "32854 - PERSONCRED SOLUÇÕES DE CRÉDITO", "C": 35, "B": 36909.41, "L": 27720.78}, {"Nome parceiro": "80130 - DEBORA MILLY REGIS MONTEIRO", "C": 63, "B": 31240.51, "L": 23481.71}, {"Nome parceiro": "94437 - LETICIA DE LIMA SOBRINHO", "C": 45, "B": 28807.91, "L": 21282.98}, {"Nome parceiro": "86977 - VIVA PROMOTORA DE NEGOCIOS E COBRANCA LTDA", "C": 47, "B": 21023.79, "L": 15393.55}, {"Nome parceiro": "2133 - JULIO CESAR REIS CABRAL", "C": 42, "B": 18879.68, "L": 13619.93}, {"Nome parceiro": "2180 - FELIPE NUNES LOPES", "C": 33, "B": 16871.41, "L": 12373.78}, {"Nome parceiro": "1472 - ANDREIA CONCEICAO GONDIM DA COSTA", "C": 27, "B": 16852.77, "L": 12683.35}, {"Nome parceiro": "19839 - JESSYCA MESSIAS DE SOUZA", "C": 23, "B": 16105.12, "L": 11972.6}, {"Nome parceiro": "9285 - FREYTHAZ BRASIL NEGÓCIOS LTDA", "C": 25, "B": 15673.74, "L": 11640.84}, {"Nome parceiro": "99988 - 54.127.575 EMANOEL LOPES", "C": 14, "B": 13164.23, "L": 9898.73}, {"Nome parceiro": "9630 - MARIA AURICELIA DE OLIVEIRA PEREIRA", "C": 12, "B": 13099.79, "L": 9922.23}, {"Nome parceiro": "9269 - ELOCONSIG", "C": 8, "B": 12356.78, "L": 9467.56}, {"Nome parceiro": "22001 - 62.301.952 MAIKON RICARDO SILVEIRA DA COSTA", "C": 27, "B": 12246.25, "L": 9050.35}, {"Nome parceiro": "8616 - FERNANDA DOS SANTOS SOUZA", "C": 3, "B": 12178.08, "L": 9364.81}, {"Nome parceiro": "7082 - JENNIFER MAYARA SENA BRANDAO", "C": 22, "B": 12038.56, "L": 8877.24}],
+  sup_mes:  [{"Superintendente": "1003 - JHONATHAN ROSSI DA CRUZ", "Mes": "Ago/25", "C": 124, "B": 97310.27, "L": 72778.01}, {"Superintendente": "1003 - JHONATHAN ROSSI DA CRUZ", "Mes": "Set/25", "C": 118, "B": 94385.2, "L": 70841.54}, {"Superintendente": "1803 - JESSICA COUTINHO DE AZEVEDO", "Mes": "Ago/25", "C": 344, "B": 169615.84, "L": 124746.14}, {"Superintendente": "1803 - JESSICA COUTINHO DE AZEVEDO", "Mes": "Set/25", "C": 293, "B": 198100.59, "L": 147831.72}, {"Superintendente": "2389 - FELIPE CUNHA DE JESUS", "Mes": "Ago/25", "C": 65, "B": 50083.66, "L": 37373.56}, {"Superintendente": "2389 - FELIPE CUNHA DE JESUS", "Mes": "Set/25", "C": 43, "B": 35874.91, "L": 26909.33}, {"Superintendente": "4457 - CASSIO LEMOS NETO", "Mes": "Ago/25", "C": 96, "B": 42242.18, "L": 31306.69}, {"Superintendente": "4457 - CASSIO LEMOS NETO", "Mes": "Set/25", "C": 92, "B": 60054.74, "L": 45028.84}, {"Superintendente": "7722 - DINHO SILVA", "Mes": "Ago/25", "C": 133, "B": 60589.83, "L": 44281.69}, {"Superintendente": "7722 - DINHO SILVA", "Mes": "Set/25", "C": 86, "B": 62592.03, "L": 47087.2}, {"Superintendente": "7842 - JESSICA ESTRATO GONCALVES", "Mes": "Ago/25", "C": 143, "B": 88862.99, "L": 65920.2}, {"Superintendente": "7842 - JESSICA ESTRATO GONCALVES", "Mes": "Set/25", "C": 148, "B": 96353.42, "L": 71785.89}],
+  reg_mes:  [{"Regional": "0114 - ARTHUR ROZA NETO", "Mes": "Ago/25", "C": 344, "B": 169615.84, "L": 124746.14}, {"Regional": "0114 - ARTHUR ROZA NETO", "Mes": "Set/25", "C": 293, "B": 198100.59, "L": 147831.72}, {"Regional": "0604 - DINHO SILVA", "Mes": "Ago/25", "C": 1, "B": 260.69, "L": 166.61}, {"Regional": "0769 - MELHOR CRÉDITO (REGIONAL)", "Mes": "Ago/25", "C": 2, "B": 535.86, "L": 376.62}, {"Regional": "0769 - MELHOR CRÉDITO (REGIONAL)", "Mes": "Set/25", "C": 11, "B": 5907.84, "L": 4379.81}, {"Regional": "1292 - RODRIGO VALCI SILVEIRA", "Mes": "Ago/25", "C": 53, "B": 23170.02, "L": 17490.23}, {"Regional": "1292 - RODRIGO VALCI SILVEIRA", "Mes": "Set/25", "C": 63, "B": 36213.3, "L": 27072.0}, {"Regional": "1595 - STELA PESSOA DOMINGOS", "Mes": "Ago/25", "C": 3, "B": 4598.92, "L": 3523.44}, {"Regional": "1595 - STELA PESSOA DOMINGOS", "Mes": "Set/25", "C": 2, "B": 7946.23, "L": 6097.85}, {"Regional": "1784 - GEANDERSON LOCKS NAZARIO DE OLIVEIRA", "Mes": "Ago/25", "C": 63, "B": 59183.05, "L": 44405.27}, {"Regional": "1784 - GEANDERSON LOCKS NAZARIO DE OLIVEIRA", "Mes": "Set/25", "C": 58, "B": 62891.1, "L": 47523.21}, {"Regional": "17890 - RENAN LELES DOS SANTOS (CHECK)", "Mes": "Ago/25", "C": 127, "B": 56799.78, "L": 41502.09}, {"Regional": "17890 - RENAN LELES DOS SANTOS (CHECK)", "Mes": "Set/25", "C": 75, "B": 50679.48, "L": 38062.27}, {"Regional": "2097 - ODAILTON SOUSA MALVEIRA", "Mes": "Ago/25", "C": 50, "B": 41603.67, "L": 31140.32}, {"Regional": "2097 - ODAILTON SOUSA MALVEIRA", "Mes": "Set/25", "C": 25, "B": 18375.27, "L": 13829.56}, {"Regional": "2523 - JHONATHAN ROSSI DA CRUZ", "Mes": "Ago/25", "C": 59, "B": 37591.36, "L": 27996.12}, {"Regional": "2523 - JHONATHAN ROSSI DA CRUZ", "Mes": "Set/25", "C": 49, "B": 25586.26, "L": 18938.52}, {"Regional": "25576 - JOSE DIONISIO ALBUQUERQUE JUNIOR", "Mes": "Ago/25", "C": 8, "B": 4229.93, "L": 3071.16}, {"Regional": "25576 - JOSE DIONISIO ALBUQUERQUE JUNIOR", "Mes": "Set/25", "C": 7, "B": 1752.43, "L": 1196.46}, {"Regional": "26248 - FELIPE CUNHA DE JESUS", "Mes": "Ago/25", "C": 7, "B": 4250.06, "L": 3162.08}, {"Regional": "26248 - FELIPE CUNHA DE JESUS", "Mes": "Set/25", "C": 11, "B": 15747.21, "L": 11883.31}, {"Regional": "33014 - ALLEF KAYQUE MARQUES BONS OLHOS", "Mes": "Ago/25", "C": 143, "B": 88862.99, "L": 65920.2}, {"Regional": "33014 - ALLEF KAYQUE MARQUES BONS OLHOS", "Mes": "Set/25", "C": 148, "B": 96353.42, "L": 71785.89}, {"Regional": "3474 - BRUNO SANTANA FERREIRA", "Mes": "Set/25", "C": 2, "B": 2277.68, "L": 1739.19}, {"Regional": "6051 - NEXTT PROMOTORA (REGIONAL)", "Mes": "Ago/25", "C": 5, "B": 3529.36, "L": 2612.99}, {"Regional": "6051 - NEXTT PROMOTORA (REGIONAL)", "Mes": "Set/25", "C": 9, "B": 9634.87, "L": 7285.74}, {"Regional": "8211 - ALLAN MONTEIRO DE LIMA", "Mes": "Ago/25", "C": 40, "B": 14473.24, "L": 10293.02}, {"Regional": "8211 - ALLAN MONTEIRO DE LIMA", "Mes": "Set/25", "C": 27, "B": 15895.21, "L": 11858.99}],
+};
+
+const P3F = {sup: 'todos', reg: 'todos', mes: 'todos', prod: 'todos'};
+let charts3 = {};
+
+function destroyCharts3() {
+  Object.values(charts3).forEach(c => { try { c.destroy(); } catch(e){} });
+  charts3 = {};
+}
+
+function p3GetData(base, baseProd) {
+  // Se produto selecionado e existir dataset por produto, usa ele; senão usa base
+  if (P3F.prod !== 'todos' && baseProd && baseProd[P3F.prod]) return baseProd[P3F.prod];
+  return base;
+}
+function p3Filter(data) {
+  let r = data;
+  if (P3F.sup !== 'todos') r = r.filter(x => (x.Superintendente||'') === P3F.sup);
+  if (P3F.reg !== 'todos') r = r.filter(x => (x.Regional||'') === P3F.reg);
+  if (P3F.mes !== 'todos') r = r.filter(x => (x.Mes||x.mes||'') === P3F.mes);
+  return r;
+}
+
+function p3Aggregate(data, groupCol) {
+  const acc = {};
+  data.forEach(r => {
+    const k = r[groupCol] || 'Outros';
+    if (!acc[k]) acc[k] = {C:0, B:0, L:0};
+    acc[k].C += Number(r.C)||0;
+    acc[k].B += Number(r.B)||0;
+    acc[k].L += Number(r.L)||0;
+  });
+  return Object.entries(acc).map(([k,v]) => ({[groupCol]:k, ...v}))
+    .sort((a,b) => b.B - a.B);
+}
+
+function renderP3() {
+  destroyCharts3();
+  const lbl = [P3F.prod !== 'todos' ? P3F.prod : '', P3F.mes !== 'todos' ? P3D.mes_lbl[P3F.mes]||P3F.mes : '', P3F.sup !== 'todos' ? P3F.sup.split(' - ')[1]||P3F.sup : '', P3F.reg !== 'todos' ? P3F.reg.split(' - ')[1]||P3F.reg : ''].filter(Boolean).join(' · ');
+
+  // Seleciona datasets (produto filtrado se disponível)
+  const _sup_mes  = p3GetData(P3D.sup_mes,  P3D.sup_mes_prod);
+  const _reg_mes  = p3GetData(P3D.reg_mes,  P3D.reg_mes_prod);
+  const _by_sup   = p3GetData(P3D.by_sup,   P3D.by_sup_prod);
+  const _by_reg   = p3GetData(P3D.by_reg,   P3D.by_reg_prod);
+  const _by_com   = p3GetData(P3D.by_com,   P3D.by_com_prod);
+  const _by_parc  = p3GetData(P3D.by_parc,  P3D.by_parc_prod);
+
+  // Filtra sup_mes para calcular totais
+  const filtSM = p3Filter(_sup_mes);
+  const aggSup = p3Aggregate(filtSM, 'Superintendente').slice(0,8);
+  const totB = aggSup.reduce((a,b)=>a+b.B,0);
+  const totL = aggSup.reduce((a,b)=>a+b.L,0);
+  const totC = aggSup.reduce((a,b)=>a+b.C,0);
+
+  // KPIs
+  document.getElementById('p3k_contr').textContent = pt(Math.round(totC));
+  document.getElementById('p3k_contr_sub').textContent = lbl || 'acumulado filtrado';
+  document.getElementById('p3k_bruta').textContent = fmtK(totB);
+  document.getElementById('p3k_bruta_sub').textContent = totC > 0 ? 'ticket R$ ' + (totB/totC).toFixed(0) : '—';
+  document.getElementById('p3k_liq').textContent = fmtK(totL);
+  document.getElementById('p3k_liq_sub').textContent = totC > 0 ? 'ticket R$ ' + (totL/totC).toFixed(0) : '—';
+  document.getElementById('p3k_parc').textContent = P3F.sup === 'todos' && P3F.reg === 'todos' && P3F.mes === 'todos' ? '500+' : p3Filter(P3D.by_parc).length + ' visíveis';
+  document.getElementById('p3k_parc_sub').textContent = 'no período filtrado';
+
+  ['p3_lbl_sup','p3_lbl_bvl','p3_lbl_reg','p3_lbl_com'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && id !== 'p3_lbl_bvl') el.textContent = lbl ? '2S · ' + lbl : '2S';
+    if (el && id === 'p3_lbl_bvl') el.textContent = lbl;
+  });
+
+  // CHART: Bruta por sup
+  const supColors = ['rgba(56,139,253,.85)','rgba(63,185,80,.85)','rgba(57,208,216,.85)','rgba(210,153,34,.85)','rgba(137,87,229,.85)','rgba(248,81,73,.7)','rgba(56,139,253,.5)','rgba(63,185,80,.5)'];
+  charts3.sp = new Chart(document.getElementById('c3_sp'), {
+    type: 'bar',
+    data: {
+      labels: aggSup.map(x => x.Superintendente.split(' - ').slice(1).join(' - ') || x.Superintendente),
+      datasets: [{ data: aggSup.map(x=>x.B/1000000), backgroundColor: supColors.slice(0,aggSup.length), borderRadius: 4 }]
+    },
+    options: { indexAxis:'y', responsive:true, plugins:{legend:{display:false}}, scales:{x:{grid:{color:'rgba(255,255,255,.04)'},title:{display:true,text:'R$ M'}},y:{ticks:{font:{size:10}}}}}
+  });
+
+  // CHART: Bruta vs Líquida por sup
+  charts3.bvl = new Chart(document.getElementById('c3_bvl'), {
+    type: 'bar',
+    data: {
+      labels: aggSup.map(x => x.Superintendente.split(' - ').slice(1).join(' - ') || x.Superintendente),
+      datasets: [
+        { label:'Prod. Bruta 2S', data: aggSup.map(x=>x.B/1000000), backgroundColor:'rgba(56,139,253,.75)', borderRadius:3 },
+        { label:'Prod. Líquida',  data: aggSup.map(x=>x.L/1000000), backgroundColor:'rgba(137,87,229,.55)', borderRadius:3 },
+      ]
+    },
+    options: { indexAxis:'y', responsive:true, plugins:{legend:{position:'top',labels:{boxWidth:10}}}, scales:{x:{grid:{color:'rgba(255,255,255,.04)'},title:{display:true,text:'R$ M'}},y:{ticks:{font:{size:10}}}}}
+  });
+
+  // Filtra reg_mes e agrega
+  const filtRM = p3Filter(_reg_mes);
+  const aggReg = p3Aggregate(filtRM, 'Regional').slice(0,10);
+  charts3.reg = new Chart(document.getElementById('c3_reg'), {
+    type: 'bar',
+    data: {
+      labels: aggReg.map(x => x.Regional.split(' - ').slice(1).join(' - ') || x.Regional),
+      datasets: [{ data: aggReg.map(x=>x.B/1000), backgroundColor:'rgba(56,139,253,.6)', borderRadius:3 }]
+    },
+    options: { indexAxis:'y', responsive:true, plugins:{legend:{display:false}}, scales:{x:{grid:{color:'rgba(255,255,255,.04)'},title:{display:true,text:'R$ mil'}},y:{ticks:{font:{size:9}}}}}
+  });
+
+  // Comercial — usa _by_com filtrado por produto se selecionado
+  const aggCom = _by_com.slice(0,10);
+  charts3.com = new Chart(document.getElementById('c3_com'), {
+    type: 'bar',
+    data: {
+      labels: aggCom.map(x => x.Comercial.split(' - ').slice(1).join(' - ') || x.Comercial),
+      datasets: [{ data: aggCom.map(x=>x.B/1000), backgroundColor:'rgba(57,208,216,.6)', borderRadius:3 }]
+    },
+    options: { indexAxis:'y', responsive:true, plugins:{legend:{display:false}}, scales:{x:{grid:{color:'rgba(255,255,255,.04)'},title:{display:true,text:'R$ mil'}},y:{ticks:{font:{size:9}}}}}
+  });
+
+  // Tabela parceiros - respeita filtros sup/reg/mes/prod
+  let parcData;
+  if (P3F.mes !== 'todos' && P3D.parc_mes && P3D.parc_mes.length) {
+    const mesLbl = P3D.mes_lbl[P3F.mes] || P3F.mes;
+    let filt = P3D.parc_mes.filter(x => x.Mes === mesLbl);
+    const hierMap = {};
+    (_by_parc||[]).forEach(p => { hierMap[p['Nome parceiro']] = p; });
+    // Se produto filtrado, mantém só parceiros que existem no dataset de produto
+    if (P3F.prod !== 'todos') filt = filt.filter(x => !!hierMap[x['Nome parceiro']]);
+    if (P3F.sup !== 'todos') filt = filt.filter(x => (hierMap[x['Nome parceiro']]||{}).Superintendente === P3F.sup);
+    if (P3F.reg !== 'todos') filt = filt.filter(x => (hierMap[x['Nome parceiro']]||{}).Regional === P3F.reg);
+    parcData = filt.sort((a,b) => b.B - a.B).slice(0, 20);
+  } else {
+    parcData = (_by_parc || []).slice();
+    if (P3F.sup !== 'todos') parcData = parcData.filter(x => x.Superintendente === P3F.sup);
+    if (P3F.reg !== 'todos') parcData = parcData.filter(x => x.Regional === P3F.reg);
+  }
+
+  if (parcData.length === 0) {
+    document.getElementById('c3_parc').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Nenhum parceiro para os filtros selecionados</td></tr>';
+  } else {
+    const totPB = parcData.reduce((a,b)=>a+b.B, 0);
+    const maxPB = Math.max(...parcData.map(p=>p.B));
+    document.getElementById('c3_parc').innerHTML = parcData.map((p,i) => {
+      const sup = (p.Superintendente||'').split(' - ').slice(1).join(' ') || '';
+      const reg = (p.Regional||'').split(' - ').slice(1).join(' ') || '';
+      const com = (p.Comercial||'').split(' - ').slice(1).join(' ') || '';
+      const hier = [sup, reg, com].filter(Boolean);
+      const hierHtml = hier.length
+        ? `<div style="font-size:10px;color:var(--muted);margin-top:2px;line-height:1.4">${hier.map((h,i)=>`<span style="opacity:.7">${['Sup','Reg','Com'][i]}:</span> ${h}`).join(' &nbsp;·&nbsp; ')}</div>`
+        : '';
+      return `<tr><td class="rank">${i+1}</td>
+      <td style="font-size:12px;max-width:260px"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p['Nome parceiro']}</div>${hierHtml}</td>
+      <td></td>
+      <td>${pt(p.C)}</td>
+      <td class="td-bruto">${fmtK(p.B)}<div class="bw"><div class="bf" style="width:${p.B/maxPB*100}%;background:rgba(56,139,253,.7)"></div></div></td>
+      <td class="td-liq">${fmtK(p.L)}</td>
+      <td style="font-size:11px;color:var(--muted)">${(p.B/totPB*100).toFixed(1)}%</td></tr>`;
+    }).join('');
+  }
+
+
+  // Chips
+  const chips = document.getElementById('p3_chips');
+  const active = [];
+  if (P3F.prod !== 'todos') active.push({label:'Produto: '+P3F.prod, key:'prod'});
+  if (P3F.mes !== 'todos') active.push({label:'Mês: '+(P3D.mes_lbl[P3F.mes]||P3F.mes), key:'mes'});
+  if (P3F.sup !== 'todos') active.push({label:'Sup: '+P3F.sup.split(' - ').slice(1).join(' '), key:'sup'});
+  if (P3F.reg !== 'todos') active.push({label:'Reg: '+P3F.reg.split(' - ').slice(1).join(' '), key:'reg'});
+  if (active.length) {
+    chips.style.display = 'flex';
+    chips.innerHTML = '<span style="font-size:10px;color:var(--muted);font-weight:600">Ativos:</span>' +
+      active.map(a => `<span class="f-chip">${a.label} <span onclick="p3ClearFilter('${a.key}')" style="cursor:pointer;opacity:.7;margin-left:2px">✕</span></span>`).join('');
+  } else {
+    chips.style.display = 'none';
+    chips.innerHTML = '';
+  }
+}
+
+function p3ClearFilter(key) {
+  P3F[key] = 'todos';
+  document.querySelectorAll(`[data-p3group="${key}"]`).forEach(b => b.classList.toggle('active', b.dataset.p3val === 'todos'));
+  renderP3();
+}
+
+function buildP3() {
+  // Popula botões de produto
+  const prodGrp = document.getElementById('p3_f_prod');
+  (P3D.prod_list || []).forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'f-btn';
+    btn.dataset.p3group = 'prod';
+    btn.dataset.p3val = p;
+    btn.textContent = p;
+    prodGrp.appendChild(btn);
+  });
+
+  // Popula botões de mês
+  const mesGrp = document.getElementById('p3_f_mes');
+  P3D.mes_list.forEach(m => {
+    const btn = document.createElement('button');
+    btn.className = 'f-btn';
+    btn.dataset.p3group = 'mes';
+    btn.dataset.p3val = m;
+    btn.textContent = P3D.mes_lbl[m] || m;
+    mesGrp.appendChild(btn);
+  });
+
+  // Popula botões de sup
+  const supGrp = document.getElementById('p3_f_sup');
+  P3D.sup_list.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'f-btn';
+    btn.dataset.p3group = 'sup';
+    btn.dataset.p3val = s;
+    btn.textContent = s.split(' - ').slice(1).join(' ') || s;
+    btn.style.fontSize = '10px';
+    supGrp.appendChild(btn);
+  });
+
+  // Popula botões de regional (top 8)
+  const regGrp = document.getElementById('p3_f_reg');
+  P3D.reg_list.slice(0,8).forEach(r => {
+    const btn = document.createElement('button');
+    btn.className = 'f-btn';
+    btn.dataset.p3group = 'reg';
+    btn.dataset.p3val = r;
+    btn.textContent = r.split(' - ').slice(1).join(' ') || r;
+    btn.style.fontSize = '10px';
+    regGrp.appendChild(btn);
+  });
+
+  // Event listeners filtros P3
+  document.getElementById('p3').addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-p3group]');
+    if (btn) {
+      const g = btn.dataset.p3group, v = btn.dataset.p3val;
+      P3F[g] = v;
+      document.querySelectorAll(`[data-p3group="${g}"]`).forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderP3();
+    }
+  });
+
+  document.getElementById('p3_reset').addEventListener('click', () => {
+    P3F.sup = 'todos'; P3F.reg = 'todos'; P3F.mes = 'todos'; P3F.prod = 'todos';
+    document.querySelectorAll('[data-p3group]').forEach(b => b.classList.toggle('active', b.dataset.p3val === 'todos'));
+    renderP3();
+  });
+
+  renderP3();
+}
+
+
+
+// ===== P4 DATA INICIO =====
+// ===== P4 DATA FIM =====
+// F e charts4 injetados pelo script
+
+// ===== P4 DATA FIM =====
+function destroyCharts4() {
+  Object.values(charts4).forEach(c => { try { c.destroy(); } catch(e){} });
+  charts4 = {};
+}
+
+// Helper: retorna o dataset do período selecionado (porProduto, porFundo, statusCompleto, totais)
+function getEP() {
+  const per = F.periodo || 'todos';
+  if (E.periodos && E.periodos[per]) return E.periodos[per];
+  return {
+    porProduto: E.porProduto || {},
+    porFundo: E.porFundo || {},
+    statusCompleto: E.statusCompleto || [],
+    totais: null,
+  };
+}
+
+const PERIODO_LBL = {'mes':'Mês atual','7d':'Últimos 7 dias','hoje':'Hoje'};
+
+function getFilteredTotals() {
+  const EP = getEP();
+  const t = EP.totais;
+  let base = t ? {total:t.total, desemb:t.desemb, canc:t.canc, and:t.and, bruta:t.bruta, liq:t.liq}
+               : {total:0, desemb:0, canc:0, and:0, bruta:0, liq:0};
+  if (F.produto !== 'todos' && F.fundo === 'todos') {
+    const d = EP.porProduto[F.produto];
+    base = d ? {total:d.total, desemb:d.desemb, canc:d.canc, and:d.and, bruta:d.bruta, liq:d.liq}
+             : {total:0, desemb:0, canc:0, and:0, bruta:0, liq:0};
+  } else if (F.fundo !== 'todos' && F.produto === 'todos') {
+    const d = EP.porFundo[F.fundo];
+    base = d ? {total:d.total, desemb:d.desemb, canc:d.canc, and:d.and, bruta:d.bruta, liq:d.liq}
+             : {total:0, desemb:0, canc:0, and:0, bruta:0, liq:0};
+  } else if (F.produto !== 'todos' && F.fundo !== 'todos') {
+    const compat = E.prodFundoCompat && E.prodFundoCompat[F.produto] && E.prodFundoCompat[F.produto].includes(F.fundo);
+    const d = compat ? EP.porFundo[F.fundo] : null;
+    base = d ? {total:d.total,desemb:d.desemb,canc:d.canc,and:d.and,bruta:d.bruta,liq:d.liq}
+             : {total:0,desemb:0,canc:0,and:0,bruta:0,liq:0};
+  }
+  if (F.status === 'Desembolsado') return {...base, total:base.desemb, canc:0, and:0};
+  if (F.status === 'Cancelado')    return {...base, total:base.canc,   desemb:0, and:0};
+  if (F.status === 'andamento')    return {...base, total:base.and,    desemb:0, canc:0};
+  return base;
+}
+
+function getLbl() {
+  const p=[];
+  if(F.periodo && F.periodo!=='todos') p.push(PERIODO_LBL[F.periodo] || F.periodo);
+  if(F.produto!=='todos')p.push(F.produto);
+  if(F.fundo!=='todos')p.push(F.fundo);
+  if(F.status!=='todos')p.push(F.status==='andamento'?'Em Andamento':F.status);
+  return p.length?'· '+p.join(' · '):'';
+}
+
+function renderP4() {
+  destroyCharts4();
+  const EP=getEP();
+  const fd=getFilteredTotals();
+  const lbl=getLbl();
+  const conv=fd.total>0?(fd.desemb/fd.total*100).toFixed(1):0;
+  document.getElementById('kp4_total').textContent=pt(fd.total);
+  document.getElementById('kp4_total_sub').textContent=lbl||'base completa';
+  document.getElementById('kp4_desemb').textContent=pt(fd.desemb);
+  document.getElementById('kp4_desemb_sub').textContent=conv+'% conversão';
+  document.getElementById('kp4_canc').textContent=pt(fd.canc);
+  document.getElementById('kp4_canc_sub').textContent=fd.total>0?(fd.canc/fd.total*100).toFixed(1)+'% do total':'—';
+  document.getElementById('kp4_and').textContent=pt(fd.and);
+  document.getElementById('kp4_and_sub').textContent='ag. assinatura + outros';
+  document.getElementById('kp4_bruta').textContent=fmtK(fd.bruta);
+  document.getElementById('kp4_bruta_sub').textContent=fd.desemb>0?'ticket R$ '+(fd.bruta/fd.desemb).toFixed(0):'—';
+  ['lbl_status','lbl_funil','lbl_conv_prod','lbl_conv_fundo','lbl_conv_mes'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.textContent=lbl;
+  });
+  // Status donut
+  const SCOR={'Desembolsado':'#3fb950','Cancelado':'rgba(248,81,73,.85)','Ag. Assinatura':'#d29922','Ag. Desembolso':'#388bfd','Em Análise':'#8957e5','Em Averbação':'#39d0d8','Outros':'#7d8590','Em Andamento':'rgba(56,139,253,.7)'};
+  const corDe=(s,fallback)=>SCOR[s]||fallback||'#7d8590';
+  let stData=F.status==='todos'
+    ?(F.produto==='todos'&&F.fundo==='todos'?EP.statusCompleto.map(x=>({...x,cor:corDe(x.s)})):[{s:'Desembolsado',v:fd.desemb,cor:SCOR['Desembolsado']},{s:'Cancelado',v:fd.canc,cor:SCOR['Cancelado']},{s:'Em Andamento',v:fd.and,cor:SCOR['Em Andamento']}].filter(x=>x.v>0))
+    :[{s:F.status==='andamento'?'Em Andamento':F.status,v:F.status==='Desembolsado'?fd.desemb:F.status==='Cancelado'?fd.canc:fd.and,cor:corDe(F.status==='andamento'?'Em Andamento':F.status)}];
+  charts4.s=new Chart(document.getElementById('c4_s'),{type:'doughnut',data:{labels:stData.map(x=>x.s),datasets:[{data:stData.map(x=>x.v),backgroundColor:stData.map(x=>x.cor),borderWidth:2,borderColor:'#161b22'}]},options:{responsive:true,cutout:'52%',plugins:{legend:{position:'right',labels:{boxWidth:8,padding:5,font:{size:10}}}}}});
+  // Funil
+  const base=fd.total||1;
+  const fi=F.status==='todos'?[{s:'Total Digitados',v:fd.total,cor:'rgba(56,139,253,.6)'},{s:'Desembolsados',v:fd.desemb,cor:'#3fb950'},{s:'Cancelados',v:fd.canc,cor:'rgba(248,81,73,.7)'},{s:'Em Andamento',v:fd.and,cor:'rgba(57,208,216,.7)'}]:[{s:F.status==='andamento'?'Em Andamento':F.status,v:F.status==='Desembolsado'?fd.desemb:F.status==='Cancelado'?fd.canc:fd.and,cor:F.status==='Desembolsado'?'#3fb950':'rgba(248,81,73,.7)'}];
+  const fMax=fi[0]?.v||1;
+  document.getElementById('c4_funil').innerHTML=fi.map(({s,v,cor})=>{const p=(v/fMax*100).toFixed(0);return '<div class="fi"><div class="fl">'+s+'</div><div class="fbw"><div class="fb" style="width:'+p+'%;background:'+cor+'">'+pt(v)+'</div></div><div class="fc">'+(v/base*100).toFixed(1)+'%</div></div>';}).join('');
+  // Conv por produto (data-driven, respeitando período)
+  const PRODCOR={FGTS:'rgba(31,111,235,.8)','E-CONSIGNADO':'rgba(137,87,229,.8)',CLT:'rgba(57,208,216,.8)'};
+  const prods=F.produto==='todos'?Object.keys(EP.porProduto):(EP.porProduto[F.produto]?[F.produto]:[]);
+  const compat=E.prodFundoCompat||{};
+  const isCompat=(p,f)=>!compat[p]||compat[p].length===0||compat[p].includes(f);
+  const getD=p=>{if(!EP.porProduto[p])return 0;if(F.fundo==='todos')return EP.porProduto[p].desemb;return isCompat(p,F.fundo)&&EP.porFundo[F.fundo]?EP.porFundo[F.fundo].desemb:0;};
+  const getN=p=>{if(!EP.porProduto[p])return 0;if(F.fundo==='todos')return EP.porProduto[p].total-EP.porProduto[p].desemb;const fd=EP.porFundo[F.fundo];return isCompat(p,F.fundo)&&fd?fd.total-fd.desemb:0;};
+  charts4.c=new Chart(document.getElementById('c4_c'),{type:'bar',data:{labels:prods,datasets:[{label:'Desembolsados',data:prods.map(getD),backgroundColor:prods.map(p=>PRODCOR[p]||'rgba(125,133,144,.7)'),borderRadius:4},{label:'Não desembolsados',data:prods.map(getN),backgroundColor:'rgba(248,81,73,.3)',borderRadius:4}]},options:{responsive:true,scales:{x:{stacked:true},y:{stacked:true,grid:{color:'rgba(255,255,255,.04)'}}},plugins:{legend:{position:'top',labels:{boxWidth:10}}}}});
+  // Conv por fundo (data-driven, respeitando período)
+  const fundos=F.fundo==='todos'?Object.keys(EP.porFundo):(EP.porFundo[F.fundo]?[F.fundo]:[]);
+  const getDF=f=>{if(!EP.porFundo[f])return 0;if(F.produto==='todos')return EP.porFundo[f].desemb;return isCompat(F.produto,f)?EP.porFundo[f].desemb:0;};
+  const getNF=f=>{if(!EP.porFundo[f])return 0;if(F.produto==='todos')return EP.porFundo[f].total-EP.porFundo[f].desemb;return isCompat(F.produto,f)?(EP.porFundo[f].total-EP.porFundo[f].desemb):0;};
+  charts4.cf=new Chart(document.getElementById('c4_cf'),{type:'bar',data:{labels:fundos,datasets:[{label:'Desembolsados',data:fundos.map(getDF),backgroundColor:fundos.map(f=>(typeof FC!=='undefined'&&FC[f])||'rgba(125,133,144,.7)'),borderRadius:4},{label:'Não desembolsados',data:fundos.map(getNF),backgroundColor:'rgba(248,81,73,.25)',borderRadius:4}]},options:{responsive:true,scales:{x:{stacked:true},y:{stacked:true,grid:{color:'rgba(255,255,255,.04)'}}},plugins:{legend:{position:'top',labels:{boxWidth:10}}}}});
+  // Conv mensal (data-driven via E.mensalPorProduto)
+  const mL=E.mensal.map(x=>x.m);
+  let dD=(F.produto!=='todos' && E.mensalPorProduto && E.mensalPorProduto[F.produto]) ? E.mensalPorProduto[F.produto] : E.mensal.map(x=>x.desemb);
+  let cD=E.mensal.map((x,i)=>x.canc);
+  const convL=E.mensal.map((x,i)=>x.total>0?(dD[i]/x.total*100).toFixed(1):0);
+  charts4.cm=new Chart(document.getElementById('c4_cm'),{type:'bar',data:{labels:mL,datasets:[{label:'Desembolsados',data:dD,backgroundColor:'rgba(63,185,80,.7)',borderRadius:3,yAxisID:'y'},{label:'Cancelados',data:cD,backgroundColor:'rgba(248,81,73,.4)',borderRadius:3,yAxisID:'y'},{label:'Conversão %',data:convL,type:'line',yAxisID:'y2',borderColor:'#d29922',fill:false,tension:.4,pointRadius:4,pointBackgroundColor:'#d29922'}]},options:{responsive:true,plugins:{legend:{position:'top',labels:{boxWidth:10}}},scales:{y:{stacked:true,grid:{color:'rgba(255,255,255,.04)'}},y2:{position:'right',grid:{display:false},title:{display:true,text:'Conv %'},max:105}}}});
+  // Bruta vs Liquida
+  charts4.bvl=new Chart(document.getElementById('c4_bvl'),{type:'line',data:{labels:D.meses,datasets:[{label:'Prod. Bruta 2S',data:D.bruto.map(v=>v/1000),borderColor:'#388bfd',backgroundColor:'rgba(56,139,253,.08)',fill:true,tension:.4,pointRadius:3},{label:'Prod. Líquida',data:D.liquido.map(v=>v/1000),borderColor:'#8957e5',backgroundColor:'rgba(137,87,229,.06)',fill:true,tension:.4,pointRadius:3,borderDash:[5,3]}]},options:{responsive:true,plugins:{legend:{position:'top',labels:{boxWidth:10}}},scales:{y:{grid:{color:'rgba(255,255,255,.04)'},title:{display:true,text:'R$ mil'}}}}});
+  // Chips
+  const chips=document.getElementById('f_chips');
+  const active=[];
+  if(F.periodo && F.periodo!=='todos')active.push({label:'Período: '+(PERIODO_LBL[F.periodo]||F.periodo),key:'periodo'});
+  if(F.produto!=='todos')active.push({label:'Produto: '+F.produto,key:'produto'});
+  if(F.fundo!=='todos')active.push({label:'Fundo: '+F.fundo,key:'fundo'});
+  if(F.status!=='todos')active.push({label:'Status: '+(F.status==='andamento'?'Em Andamento':F.status),key:'status'});
+  if(active.length){chips.style.display='flex';chips.innerHTML='<span style="font-size:10px;color:var(--muted);font-weight:600">Ativos:</span>'+active.map(a=>'<span class="f-chip">'+a.label+' <span onclick="clearFilter(\''+a.key+'\')" style="cursor:pointer;opacity:.7;margin-left:2px">✕</span></span>').join('');}
+  else{chips.style.display='none';chips.innerHTML='';}
+}
+
+function clearFilter(key) {
+  F[key]='todos';
+  document.querySelectorAll('[data-group="'+key+'"]').forEach(b=>b.classList.toggle('active',b.dataset.val==='todos'));
+  renderP4();
+}
+
+function buildP4() {
+  // Popula botões PRODUTO dinamicamente baseado nos dados
+  const fp=document.getElementById('f_produto');
+  if(fp){
+    const prodLabels={'FGTS':'FGTS','E-CONSIGNADO':'E-CONSIG','CLT':'CLT'};
+    Object.keys(E.porProduto).forEach(p=>{
+      if(fp.querySelector('[data-val="'+p+'"]'))return;
+      const b=document.createElement('button');
+      b.className='f-btn';b.dataset.group='produto';b.dataset.val=p;
+      b.textContent=prodLabels[p]||p;fp.appendChild(b);
+    });
+  }
+  document.querySelectorAll('.f-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const g=this.dataset.group, v=this.dataset.val;
+      if (!g) return;
+      F[g]=v;
+      document.querySelectorAll('[data-group="'+g+'"]').forEach(b=>b.classList.remove('active'));
+      this.classList.add('active');
+      renderP4();
+    });
+  });
+  document.getElementById('f_reset').addEventListener('click', ()=>{
+    F.periodo='todos'; F.produto='todos'; F.fundo='todos'; F.status='todos';
+    document.querySelectorAll('.f-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='todos'));
+    renderP4();
+  });
+  renderP4();
+}
+
+// NAV
+const built={};
+document.getElementById('mainTabs').addEventListener('click',function(e){
+  const tab=e.target.closest('[data-page]');if(!tab)return;
+  const pid=tab.dataset.page;
+  document.querySelectorAll('#mainTabs .tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
+  tab.classList.add('active');
+  document.getElementById(pid).classList.add('active');
+  if(!built[pid]){built[pid]=true;
+    try{if(pid==='p2')buildP2();}catch(e){console.error('buildP2',e);}
+    try{if(pid==='p3')buildP3();}catch(e){console.error('buildP3',e);}
+    try{if(pid==='p4')buildP4();}catch(e){console.error('buildP4',e);}
+  }
+});
+
+built['p1']=true;
+try { buildP1(); } catch(e) { console.error('buildP1 erro:', e); }
+
+// Popula KPIs dinamicos com D._meta se disponivel
+if (D._meta) {
+  const m = D._meta;
+  const set = (id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+
+  // ===== HEADER + P1 =====
+  const periodo = (D.meses && D.meses.length) ? (D.meses[0] + ' – ' + D.meses[D.meses.length-1]) : '';
+  set('hdr_periodo', periodo + ' · Ref. ' + m.data_ref);
+  set('hdr_total_reg', pt(m.total_reg));
+  if(m.gerado_em) set('hdr_atualizado', m.gerado_em);
+
+  // P1 KPIs principais
+  set('kp1_des',       pt(m.total_des));
+  set('kp1_des_total', pt(m.total_reg));
+  set('kp1_conv',      m.conv_geral + '% conversão');
+  set('kp1_bruto',     fmtK(m.total_bruto));
+  set('kp1_tkb',       'R$ ' + (m.total_des>0 ? Math.round(m.total_bruto/m.total_des).toLocaleString('pt-BR') : 0));
+  set('kp1_liq',       fmtK(m.total_liq));
+  set('kp1_tkl',       'R$ ' + (m.total_des>0 ? Math.round(m.total_liq/m.total_des).toLocaleString('pt-BR') : 0));
+  set('kp1_proj_lbl',  m.mes_lbl);
+  set('kp1_proj',      fmtK(m.mes_proj_b) + ' ↗');
+  set('kp1_proj_du',   m.mes_pdu + ' de ' + m.mes_tdu + ' dias úteis · ' + m.mes_pct + '%');
+  set('kp1_proj_real', fmtK(m.mes_bruto) + ' realizado');
+
+  // P1 mini-cards por produto (data-driven)
+  const prodTotMap = {};
+  (D.prodRows||[]).forEach(r=>{
+    if(!prodTotMap[r.p]) prodTotMap[r.p]={c:0,b:0,l:0};
+    prodTotMap[r.p].c += r.c; prodTotMap[r.p].b += r.b; prodTotMap[r.p].l += r.l;
+  });
+  document.querySelectorAll('#p1_prodmini .pm').forEach(pm=>{
+    const p = pm.dataset.prod;
+    const tot = prodTotMap[p] || prodTotMap['CLT'] || {c:0,b:0,l:0};
+    const desCard = pm.querySelector('[data-f="c"]');
+    const bCard   = pm.querySelector('[data-f="b"]');
+    const lCard   = pm.querySelector('[data-f="l"]');
+    const cvCard  = pm.querySelector('[data-f="conv"]');
+    let pUsed = prodTotMap[p] ? p : (prodTotMap['CLT'] && p==='E-CONSIGNADO' ? 'CLT' : p);
+    const t = prodTotMap[pUsed] || {c:0,b:0,l:0};
+    if(desCard) desCard.textContent = pt(t.c);
+    if(bCard)   bCard.textContent   = fmtK(t.b);
+    if(lCard)   lCard.textContent   = fmtK(t.l);
+    if(cvCard){
+      const ep = (typeof E !== 'undefined' && E.porProduto) ? E.porProduto[pUsed] : null;
+      cvCard.textContent = (ep && ep.total>0) ? ((ep.desemb/ep.total*100).toFixed(1).replace('.',',') + '%') : '—';
+    }
+    const labelMap={'FGTS':'FGTS','E-CONSIGNADO':'E-CONSIG','CLT':'CLT'};
+    const lblEl = pm.querySelector('.pm-name');
+    if(lblEl) lblEl.textContent = labelMap[pUsed] || pUsed;
+  });
+
+  // ===== P4 (esteira) =====
+  const elems = {
+    'kp4_total': pt(m.st_des + m.st_canc + m.st_ag),
+    'kp4_desemb': pt(m.st_des),
+    'kp4_desemb_sub': m.st_des + '/' + (m.st_des+m.st_canc+m.st_ag) + ' (' + m.conv_geral + '%)',
+    'kp4_canc': pt(m.st_canc),
+    'kp4_and': pt(m.st_ag),
+    'kp4_bruta': fmtK(m.total_bruto),
+    'kp4_bruta_sub': 'ticket R$ ' + (m.total_bruto/m.total_des).toFixed(0),
+  };
+  Object.entries(elems).forEach(([id, val]) => set(id, val));
+}
+</script>
+</body>
+</html>
+
+
