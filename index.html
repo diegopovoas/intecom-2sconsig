@@ -36,8 +36,31 @@ button:disabled{opacity:.6}
 const SUPA_URL='https://uhjnfdyfyealtmbldjso.supabase.co';
 const SUPA_KEY='sb_publishable_lQqWj9oquj5wsmI67NJDXA_1v3MKUNc';
 
-function hdr(t){return {apikey:SUPA_KEY, Authorization:'Bearer '+(t||SUPA_KEY), 'Content-Type':'application/json'};}
+function hdr(t){return {apikey:SUPA_KEY,Authorization:'Bearer '+(t||SUPA_KEY),'Content-Type':'application/json'};}
 function erro(m){const e=document.getElementById('err');e.textContent=m;e.style.display='block';}
+
+// Renova o access_token usando o refresh_token salvo
+async function renovarToken(){
+  const s=JSON.parse(localStorage.getItem('s2_sess')||'{}');
+  if(!s.rt) return null;
+  try{
+    const r=await fetch(SUPA_URL+'/auth/v1/token?grant_type=refresh_token',
+      {method:'POST',headers:hdr(),body:JSON.stringify({refresh_token:s.rt})});
+    const j=await r.json();
+    if(!r.ok||!j.access_token) return null;
+    const ns={t:j.access_token,rt:j.refresh_token||s.rt,e:s.e,exp:Date.now()+(j.expires_in||3600)*1000};
+    localStorage.setItem('s2_sess',JSON.stringify(ns));
+    return j.access_token;
+  }catch(_){return null;}
+}
+
+// Retorna token válido, renovando automaticamente se estiver próximo do vencimento
+async function getToken(){
+  const s=JSON.parse(localStorage.getItem('s2_sess')||'{}');
+  if(!s.t) return null;
+  if(Date.now()>(s.exp||0)-300000) return await renovarToken(); // renova se faltar < 5min
+  return s.t;
+}
 
 async function carregarPainel(tok){
   document.getElementById('card').innerHTML='<div class="carregando">Carregando painel...</div>';
@@ -47,28 +70,45 @@ async function carregarPainel(tok){
     const pr=await fetch(SUPA_URL+'/rest/v1/perfis?select=role&login=eq.'+encodeURIComponent(s.e||''),{headers:hdr(tok)});
     const pj=await pr.json(); ehAdmin=(pj[0]||{}).role==='admin';
   }catch(_){}
-  const r=await fetch(SUPA_URL+'/rest/v1/painel_cache?select=html,atualizado_em&escopo=eq.painel',{headers:hdr(tok)});
-  if(!r.ok){localStorage.removeItem('s2_sess');location.reload();return;}
+  let r=await fetch(SUPA_URL+'/rest/v1/painel_cache?select=html,atualizado_em&escopo=eq.painel',{headers:hdr(tok)});
+  if(!r.ok){
+    // Tenta renovar antes de deslogar
+    const novoTok=await renovarToken();
+    if(novoTok){carregarPainel(novoTok);return;}
+    localStorage.removeItem('s2_sess');location.reload();return;
+  }
   const rows=await r.json();
   if(!rows.length){document.getElementById('card').innerHTML='<div class="carregando">Painel ainda não publicado — aguarde a próxima atualização.</div>';return;}
-  sessionStorage.setItem('2s_auth','1'); // pula o login interno do painel
+  sessionStorage.setItem('2s_auth','1');
   let html=rows[0].html;
   const itemCss='padding:10px 16px;cursor:pointer;font-size:13px;color:#8b949e;display:flex;align-items:center;gap:5px;text-decoration:none;white-space:nowrap';
   let menu='<div style="margin-left:auto;display:flex;align-items:center">';
   if(ehAdmin)menu+='<a href="usuarios.html" style="'+itemCss+'">⚙️ Usuários</a>';
   menu+='<span onclick="localStorage.removeItem(\'s2_sess\');sessionStorage.removeItem(\'2s_auth\');location.reload()" style="'+itemCss+'">⏻ Sair</span></div>';
-  html=html.replace('🔄 Esteira & Conversão</div>', '🔄 Esteira & Conversão</div>'+menu);
-  // Auto-refresh: a cada 5min verifica se há painel novo publicado e recarrega
+  html=html.replace('🔄 Esteira & Conversão</div>','🔄 Esteira & Conversão</div>'+menu);
+  // Poll: a cada 5min renova token se necessário e verifica se há novo painel
   const ts=rows[0].atualizado_em||'';
-  const poll='<scr'+'ipt>(function(){var TS='+JSON.stringify(ts)+';setInterval(async function(){'
-    +'try{var s=JSON.parse(localStorage.getItem("s2_sess")||"{}");'
-    +'if(!s.t||Date.now()>(s.exp||0)-60000)return;'
-    +'var r=await fetch("'+SUPA_URL+'/rest/v1/painel_cache?select=atualizado_em&escopo=eq.painel",'
-    +'{headers:{apikey:"'+SUPA_KEY+'",Authorization:"Bearer "+s.t}});'
-    +'if(!r.ok)return;var j=await r.json();'
-    +'if(j[0]&&j[0].atualizado_em!==TS)location.reload();'
-    +'}catch(e){}},300000);})();</scr'+'ipt>';
-  html=html.replace('</body>', poll+'</body>');
+  const poll='<scr'+'ipt>(function(){'
+    +'var TS='+JSON.stringify(ts)+',SU="'+SUPA_URL+'",SK="'+SUPA_KEY+'";'
+    +'async function renovar(){'
+    +'  var s=JSON.parse(localStorage.getItem("s2_sess")||"{}");if(!s.rt)return null;'
+    +'  try{var r=await fetch(SU+"/auth/v1/token?grant_type=refresh_token",'
+    +'    {method:"POST",headers:{apikey:SK,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:s.rt})});'
+    +'  var j=await r.json();if(!r.ok||!j.access_token)return null;'
+    +'  localStorage.setItem("s2_sess",JSON.stringify({t:j.access_token,rt:j.refresh_token||s.rt,e:s.e,exp:Date.now()+(j.expires_in||3600)*1000}));'
+    +'  return j.access_token;}catch(e){return null;}}'
+    +'setInterval(async function(){'
+    +'  try{'
+    +'    var s=JSON.parse(localStorage.getItem("s2_sess")||"{}");if(!s.t)return;'
+    +'    var tok=s.t;'
+    +'    if(Date.now()>(s.exp||0)-300000){tok=await renovar();if(!tok)return;}'
+    +'    var r=await fetch(SU+"/rest/v1/painel_cache?select=atualizado_em&escopo=eq.painel",'
+    +'      {headers:{apikey:SK,Authorization:"Bearer "+tok}});'
+    +'    if(!r.ok)return;var j=await r.json();'
+    +'    if(j[0]&&j[0].atualizado_em!==TS)location.reload();'
+    +'  }catch(e){}},300000);'
+    +'})();</scr'+'ipt>';
+  html=html.replace('</body>',poll+'</body>');
   document.open();document.write(html);document.close();
 }
 
@@ -81,18 +121,23 @@ async function entrar(){
     const r=await fetch(SUPA_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:hdr(),body:JSON.stringify({email,password:senha})});
     const j=await r.json();
     if(!r.ok||!j.access_token){erro('Usuário ou senha incorretos');btn.disabled=false;btn.textContent='Entrar';return;}
-    localStorage.setItem('s2_sess',JSON.stringify({t:j.access_token,e:email,exp:Date.now()+(j.expires_in||3600)*1000}));
+    // Salva access_token + refresh_token
+    localStorage.setItem('s2_sess',JSON.stringify({t:j.access_token,rt:j.refresh_token,e:email,exp:Date.now()+(j.expires_in||3600)*1000}));
     carregarPainel(j.access_token);
   }catch(ex){erro('Erro de conexão: '+ex.message);btn.disabled=false;btn.textContent='Entrar';}
 }
 
 ['email','senha'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')entrar();}));
 
-// Sessão existente ainda válida? entra direto
-try{
-  const s=JSON.parse(localStorage.getItem('s2_sess'));
-  if(s&&s.t&&Date.now()<(s.exp||0)-60000)carregarPainel(s.t);
-}catch(_){}
+// Sessão existente? Renova se necessário e entra direto
+(async function(){
+  try{
+    const s=JSON.parse(localStorage.getItem('s2_sess'));
+    if(!s||!s.t) return;
+    const tok=await getToken();
+    if(tok) carregarPainel(tok);
+  }catch(_){}
+})();
 </script>
 </body>
 </html>
