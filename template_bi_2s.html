@@ -1386,6 +1386,10 @@ function renderP3() {
     if (P3F.prod !== 'todos') filt = filt.filter(x => !!hierMap[x['Nome parceiro']]);
     if (P3F.sup !== 'todos') filt = filt.filter(x => (hierMap[x['Nome parceiro']]||{}).Superintendente === P3F.sup);
     if (P3F.reg !== 'todos') filt = filt.filter(x => (hierMap[x['Nome parceiro']]||{}).Regional === P3F.reg);
+    filt = filt.map(x => {
+      const h = hierMap[x['Nome parceiro']] || {};
+      return Object.assign({}, x, {Superintendente: h.Superintendente, Regional: h.Regional, Comercial: h.Comercial});
+    });
     parcData = filt.sort((a,b) => b.B - a.B).slice(0, 20);
   } else {
     parcData = (_by_parc || []).slice();
