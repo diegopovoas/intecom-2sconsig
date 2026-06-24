@@ -384,9 +384,13 @@ def calcular_metricas(df):
     sup_mes_g = h.groupby(['Superintendente','Mes']).agg(C=('Valor Bruto','count'),B=('Valor Bruto','sum'),L=('Valor Líquido','sum')).reset_index().round(2)
     reg_mes_g = des[des['Regional'].apply(ok_hier)].groupby(['Regional','Mes']).agg(C=('Valor Bruto','count'),B=('Valor Bruto','sum'),L=('Valor Líquido','sum')).reset_index().round(2) if 'Regional' in des.columns else pd.DataFrame()
 
-    # Parceiro x Mes - LIMITADO aos top 30 parceiros
+    # Parceiro x Mes - LIMITADO aos top 30 parceiros de CADA mes (uniao), nao so do acumulado total.
+    # Sem isso, um parceiro forte so em um mes especifico (mas fora do top 30 historico) desaparece
+    # do ranking mensal mesmo no mes em que ele se destacou.
     if 'Parceiro' in des.columns and 'Mes' in des.columns and len(by_parc2) > 0:
-        top_parc_keys = by_parc2['Parceiro'].tolist()
+        top_parc_keys = set(by_parc2['Parceiro'].tolist())
+        for _mes in des['Mes'].dropna().unique():
+            top_parc_keys.update(get_level(des[des['Mes'] == _mes], 'Parceiro', 30)['Parceiro'].tolist())
         parc_mes_g = des[des['Parceiro'].apply(ok_hier) & des['Parceiro'].isin(top_parc_keys)].groupby(['Parceiro','Mes']).agg(
             C=('Valor Bruto','count'), B=('Valor Bruto','sum'), L=('Valor Líquido','sum')
         ).reset_index()
