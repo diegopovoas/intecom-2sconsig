@@ -19,7 +19,7 @@ table{width:100%;border-collapse:collapse;background:#161b22;border:1px solid #3
 th{background:#0d1117;color:#8b949e;font-size:10px;text-transform:uppercase;letter-spacing:.7px;padding:10px 14px;text-align:left}
 td{padding:11px 14px;font-size:13px;border-top:1px solid #21262d}
 .bdg{display:inline-block;padding:2px 9px;border-radius:10px;font-size:10px;font-weight:700}
-.b-adm{background:#1f6feb22;color:#388bfd} .b-usr{background:#30363d;color:#8b949e}
+.b-own{background:#a371f722;color:#d2a8ff}.b-adm{background:#1f6feb22;color:#388bfd} .b-usr{background:#30363d;color:#8b949e}
 .b-blq{background:#f8514922;color:#f85149} .b-atv{background:#3fb95022;color:#3fb950}
 .acoes button{margin-right:6px;padding:6px 10px;font-size:11px}
 #card-login{max-width:360px;margin:80px auto}
@@ -78,8 +78,9 @@ async function lista(){
     +'<button onclick="modalNovo()">+ Novo Usuário</button></div>'
     +'<table><thead><tr><th>Login</th><th>Nome</th><th>Papel</th><th>Status</th><th>Ações</th></tr></thead><tbody>';
   users.forEach(u=>{
+    const roleClass=u.role==='owner'?'b-own':(u.role==='admin'?'b-adm':'b-usr');
     h+='<tr style="'+(u.bloqueado?'opacity:.5':'')+'"><td>'+u.login+'</td><td>'+(u.nome||'')+'</td>'
-      +'<td><span class="bdg '+(u.role==='admin'?'b-adm':'b-usr')+'">'+u.role+'</span></td>'
+      +'<td><span class="bdg '+roleClass+'">'+u.role+'</span></td>'
       +'<td><span class="bdg '+(u.bloqueado?'b-blq':'b-atv')+'">'+(u.bloqueado?'Bloqueado':'Ativo')+'</span></td>'
       +'<td class="acoes">'
       +'<button class="sec" onclick="editar(\''+u.login+'\',\''+(u.nome||'').replace(/'/g,"\\'")+'\',\''+u.role+'\')">✏️</button>'
@@ -98,7 +99,7 @@ function modalNovo(){
     +'<span class="lbl">E-mail (login)</span><input id="m-email" type="email">'
     +'<span class="lbl">Senha inicial</span><input id="m-senha" type="text" placeholder="mínimo 6 caracteres">'
     +'<span class="lbl">Nome</span><input id="m-nome">'
-    +'<span class="lbl">Papel</span><select id="m-role"><option value="user">Usuário</option><option value="admin">Admin</option></select>'
+    +'<span class="lbl">Papel</span><select id="m-role"><option value="user">Usuário</option><option value="admin">Admin</option><option value="owner">Owner</option></select>'
     +'<div class="row"><button class="sec" onclick="this.closest(\'.modal-bg\').remove()">Cancelar</button>'
     +'<button onclick="criar(this)">Criar</button></div>');
 }
@@ -112,7 +113,7 @@ async function criar(btn){
 function editar(login,nome,role){
   modal('<h2>Editar — '+login+'</h2><div class="err" id="m-err"></div>'
     +'<span class="lbl">Nome</span><input id="m-nome" value="'+nome+'">'
-    +'<span class="lbl">Papel</span><select id="m-role"><option value="user"'+(role==='user'?' selected':'')+'>Usuário</option><option value="admin"'+(role==='admin'?' selected':'')+'>Admin</option></select>'
+    +'<span class="lbl">Papel</span><select id="m-role"><option value="user"'+(role==='user'?' selected':'')+'>Usuário</option><option value="admin"'+(role==='admin'?' selected':'')+'>Admin</option><option value="owner"'+(role==='owner'?' selected':'')+'>Owner</option></select>'
     +'<div class="row"><button class="sec" onclick="this.closest(\'.modal-bg\').remove()">Cancelar</button>'
     +'<button onclick="salvarEdicao(this,\''+login+'\')">Salvar</button></div>');
 }

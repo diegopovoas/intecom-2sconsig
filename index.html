@@ -69,7 +69,7 @@ async function carregarPainel(tok){
   let ehAdmin=false;
   try{
     const pr=await fetch(SUPA_URL+'/rest/v1/perfis?select=role&login=eq.'+encodeURIComponent(s.e||''),{headers:hdr(tok)});
-    const pj=await pr.json(); ehAdmin=(pj[0]||{}).role==='admin';
+    const role=(await pr.json())[0]?.role; ehAdmin=role==='owner'||role==='admin';
   }catch(_){}
   let r=await fetch(SUPA_URL+'/rest/v1/painel_cache?select=html,atualizado_em&escopo=eq.painel',{headers:hdr(tok)});
   if(!r.ok){

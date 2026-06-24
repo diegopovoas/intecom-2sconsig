@@ -16,7 +16,7 @@ create table if not exists perfis (
   id     uuid primary key default gen_random_uuid(),
   login  text unique not null,
   nome   text,
-  role   text not null default 'user' check (role in ('admin', 'user'))
+  role   text not null default 'user' check (role in ('owner', 'admin', 'user'))
 );
 alter table perfis enable row level security;
 
@@ -39,7 +39,17 @@ language sql stable security definer set search_path = ''
 as $$
   select exists (
     select 1 from public.perfis
-    where login = (auth.jwt()->>'email') and role = 'admin'
+    where login = (auth.jwt()->>'email') and role in ('owner', 'admin')
+  );
+$$;
+
+create or replace function public.is_owner()
+returns boolean
+language sql stable security definer set search_path = ''
+as $$
+  select exists (
+    select 1 from public.perfis
+    where login = (auth.jwt()->>'email') and role = 'owner'
   );
 $$;
 
@@ -54,7 +64,7 @@ begin
            coalesce(u.banned_until > now(), false) as bloqueado
     from public.perfis p
     left join auth.users u on u.email = p.login
-    order by p.role, p.login;
+    order by case p.role when 'owner' then 0 when 'admin' then 1 else 2 end, p.login;
 end $$;
 
 create or replace function public.admin_criar_usuario(
@@ -68,7 +78,8 @@ begin
   if not public.is_admin() then raise exception 'Apenas administradores'; end if;
   if p_email !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' then raise exception 'E-mail inválido: %', p_email; end if;
   if length(coalesce(p_senha, '')) < 6 then raise exception 'A senha precisa ter pelo menos 6 caracteres'; end if;
-  if p_role not in ('admin', 'user') then raise exception 'Papel inválido: %', p_role; end if;
+  if p_role not in ('owner', 'admin', 'user') then raise exception 'Papel inválido: %', p_role; end if;
+  if p_role = 'owner' and not public.is_owner() then raise exception 'Apenas owner pode criar outro owner'; end if;
   if exists (select 1 from auth.users where email = lower(p_email)) then
     raise exception 'Já existe usuário com o e-mail %', p_email;
   end if;
@@ -97,7 +108,11 @@ language plpgsql security definer set search_path = ''
 as $$
 begin
   if not public.is_admin() then raise exception 'Apenas administradores'; end if;
-  if p_role not in ('admin', 'user') then raise exception 'Papel inválido: %', p_role; end if;
+  if p_role not in ('owner', 'admin', 'user') then raise exception 'Papel inválido: %', p_role; end if;
+  if (p_role = 'owner' or exists (select 1 from public.perfis where login = lower(alvo) and role = 'owner'))
+     and not public.is_owner() then
+    raise exception 'Apenas owner pode alterar perfil owner';
+  end if;
   update public.perfis set nome = p_nome, role = p_role where login = lower(alvo);
   if not found then raise exception 'Usuário % não encontrado', alvo; end if;
 end $$;
@@ -109,6 +124,10 @@ as $$
 begin
   if not public.is_admin() then raise exception 'Apenas administradores'; end if;
   if length(nova) < 6 then raise exception 'A senha precisa ter pelo menos 6 caracteres'; end if;
+  if exists (select 1 from public.perfis where login = lower(alvo) and role = 'owner')
+     and not public.is_owner() then
+    raise exception 'Apenas owner pode resetar senha de owner';
+  end if;
   update auth.users set encrypted_password = extensions.crypt(nova, extensions.gen_salt('bf'))
    where email = lower(alvo);
   if not found then raise exception 'Usuário % não encontrado', alvo; end if;
@@ -120,6 +139,10 @@ language plpgsql security definer set search_path = ''
 as $$
 begin
   if not public.is_admin() then raise exception 'Apenas administradores'; end if;
+  if exists (select 1 from public.perfis where login = lower(alvo) and role = 'owner')
+     and not public.is_owner() then
+    raise exception 'Apenas owner pode bloquear owner';
+  end if;
   update auth.users
      set banned_until = case when bloquear then '2999-01-01'::timestamptz else null end
    where email = lower(alvo);
@@ -132,12 +155,17 @@ language plpgsql security definer set search_path = ''
 as $$
 begin
   if not public.is_admin() then raise exception 'Apenas administradores'; end if;
+  if exists (select 1 from public.perfis where login = lower(alvo) and role = 'owner')
+     and not public.is_owner() then
+    raise exception 'Apenas owner pode excluir owner';
+  end if;
   delete from auth.users where email = lower(alvo);
   delete from public.perfis where login = lower(alvo);
 end $$;
 
 -- ── Permissões das funções ───────────────────────────────────────────
 revoke execute on function public.is_admin()                          from public, anon;
+revoke execute on function public.is_owner()                          from public, anon;
 revoke execute on function public.admin_listar_usuarios()             from public, anon;
 revoke execute on function public.admin_criar_usuario(text,text,text,text) from public, anon;
 revoke execute on function public.admin_editar_usuario(text,text,text) from public, anon;
@@ -145,6 +173,7 @@ revoke execute on function public.admin_reset_senha(text,text)        from publi
 revoke execute on function public.admin_bloquear(text,boolean)        from public, anon;
 revoke execute on function public.admin_excluir(text)                 from public, anon;
 grant  execute on function public.is_admin()                          to authenticated;
+grant  execute on function public.is_owner()                          to authenticated;
 grant  execute on function public.admin_listar_usuarios()             to authenticated;
 grant  execute on function public.admin_criar_usuario(text,text,text,text) to authenticated;
 grant  execute on function public.admin_editar_usuario(text,text,text) to authenticated;
