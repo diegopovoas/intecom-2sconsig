@@ -48,3 +48,5 @@ Setup do banco: `_supabase/setup_2s.sql`. Credenciais: `_supabase/config.json` (
 2. Atualizar URL/chaves em `_supabase/config.json`, `index.html` e `usuarios.html`
 3. Recriar usuários em `/usuarios.html` (primeiro admin via script/SQL)
 4. Rodar `RODAR.bat`
+
+<!-- teste de auto-deploy Vercel: 2026-06-25T20:37:16Z -->
