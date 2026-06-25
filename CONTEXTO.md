@@ -50,3 +50,4 @@ Setup do banco: `_supabase/setup_2s.sql`. Credenciais: `_supabase/config.json` (
 4. Rodar `RODAR.bat`
 
 <!-- teste de auto-deploy Vercel: 2026-06-25T20:37:16Z -->
+<!-- teste final auto-deploy 2026-06-25T20:46:56Z -->
